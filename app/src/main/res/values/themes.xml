@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Bingo" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#F0B429</item>
+        <item name="colorPrimaryDark">#080812</item>
+        <item name="colorAccent">#E67E22</item>
+    </style>
+</resources>
