@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <!-- ========== شاشة 1: الافتتاحية ========== -->
+    <LinearLayout
+        android:id="@+id/screenLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:id="@+id/letterRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="40dp">
+
+            <TextView android:id="@+id/letterB" android:text="B" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterI" android:text="I" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterN" android:text="N" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterG" android:text="G" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterO" android:text="O" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/startTapBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="44dp"
+            android:paddingEnd="44dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:background="@drawable/bg_button_gold"
+            android:textColor="@color/dark_text_on_gold"
+            android:textStyle="bold"
+            app:backgroundTint="@null"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:visibility="invisible"
+            android:text="اضغط للبدء" />
+    </LinearLayout>
+
+    <!-- ========== شاشة 2: القائمة الرئيسية ========== -->
+    <LinearLayout
+        android:id="@+id/screenWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/settingsIconBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="@android:color/transparent"
+            android:textColor="@color/gold"
+            android:text="⚙ الإعدادات" />
+
+        <TextView
+            android:id="@+id/welcomeGreeting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gold"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:text="أهلاً" />
+
+        <Button android:id="@+id/cardNetwork" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_button_gold" app:backgroundTint="@null" android:insetTop="0dp" android:insetBottom="0dp"
+            android:textColor="@color/dark_text_on_gold" android:textStyle="bold" android:padding="16dp" android:layout_marginBottom="10dp"
+            android:text="🌐 لعب شبكي" />
+
+        <Button android:id="@+id/cardAI" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_cell" android:textColor="@color/muted" android:padding="16dp" android:layout_marginBottom="10dp"
+            android:text="🤖 ضد الذكاء الاصطناعي (قريباً)" />
+
+        <Button android:id="@+id/cardFriends" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_cell" android:textColor="@color/muted" android:padding="16dp" android:layout_marginBottom="10dp"
+            android:text="👥 أصدقاء (قريباً)" />
+
+        <Button android:id="@+id/cardLevels" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_cell" android:textColor="@color/muted" android:padding="16dp" android:layout_marginBottom="10dp"
+            android:text="🏆 مستويات (قريباً)" />
+
+        <Button android:id="@+id/cardDaily" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_cell" android:textColor="@color/muted" android:padding="16dp" android:layout_marginBottom="10dp"
+            android:text="📅 تحدي يومي (قريباً)" />
+
+        <Button android:id="@+id/cardTournament" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/bg_cell" android:textColor="@color/muted" android:padding="16dp"
+            android:text="🏅 بطولة (قريباً)" />
+    </LinearLayout>
+
+    <!-- ========== شاشة 3: الإعدادات ========== -->
+    <LinearLayout
+        android:id="@+id/screenSettings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/backFromSettingsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@color/muted"
+            android:text="→ رجوع" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="@color/muted" android:layout_marginTop="16dp" android:text="الاسم" />
+
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/text_main"
+            android:padding="12dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="20dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="@color/muted" android:layout_marginBottom="10dp" android:text="اللون" />
+
+        <GridLayout
+            android:id="@+id/themeContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="5"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/saveSettingsBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_button_gold"
+            app:backgroundTint="@null"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:textColor="@color/dark_text_on_gold"
+            android:textStyle="bold"
+            android:padding="14dp"
+            android:text="حفظ" />
+    </LinearLayout>
+
+    <!-- ========== شاشة 4: الشبكة (استضافة/انضمام) ========== -->
+    <LinearLayout
+        android:id="@+id/screenNetwork"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/backFromNetworkBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:background="@android:color/transparent"
+            android:textColor="@color/muted"
+            android:layout_marginBottom="16dp"
+            android:text="→ رجوع" />
+
+        <TextView
+            android:id="@+id/networkStatusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gold"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:text="اختر: استضافة أو انضمام" />
+
+        <EditText
+            android:id="@+id/ipInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="عنوان IP المضيف (للانضمام فقط)"
+            android:textColorHint="@color/muted"
+            android:textColor="@color/text_main"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:inputType="text"
+            android:layout_marginBottom="14dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/hostBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_button_gold"
+                android:textColor="@color/dark_text_on_gold"
+                android:textStyle="bold"
+                app:backgroundTint="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="استضافة (Host)" />
+
+            <Button
+                android:id="@+id/joinBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_button_gold"
+                android:textColor="@color/dark_text_on_gold"
+                android:textStyle="bold"
+                app:backgroundTint="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:text="انضمام (Join)" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ========== شاشة 5: اللعب ========== -->
+    <LinearLayout
+        android:id="@+id/screenGame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gold"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:text="" />
+
+        <GridLayout
+            android:id="@+id/gameGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="5"
+            android:rowCount="5" />
+    </LinearLayout>
+
+</FrameLayout>
