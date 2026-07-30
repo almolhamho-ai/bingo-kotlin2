@@ -21,11 +21,11 @@
             android:orientation="horizontal"
             android:layout_marginBottom="40dp">
 
-            <TextView android:id="@+id/letterB" android:text="B" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
-            <TextView android:id="@+id/letterI" android:text="I" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
-            <TextView android:id="@+id/letterN" android:text="N" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
-            <TextView android:id="@+id/letterG" android:text="G" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
-            <TextView android:id="@+id/letterO" android:text="O" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterB" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="B" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterI" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="I" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterN" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="N" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterG" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
+            <TextView android:id="@+id/letterO" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="O" android:textSize="52sp" android:textStyle="bold" android:textColor="@color/gold" />
         </LinearLayout>
 
         <Button
