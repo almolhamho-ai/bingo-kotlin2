@@ -121,6 +121,33 @@ class MainActivity : AppCompatActivity() {
     )
     private var currentThemeIndex = 0
 
+    // ---------- تدرّج لوني على النص (زي شعار BINGO وعنوان الفوز بالنسخة الأصلية) ----------
+    private fun applyGradientToRow(row: View, letters: List<TextView>, colors: IntArray) {
+        row.post {
+            val totalWidth = row.width.toFloat().coerceAtLeast(1f)
+            letters.forEach { tv ->
+                val offset = tv.left.toFloat()
+                val shader = android.graphics.LinearGradient(
+                    -offset, 0f, totalWidth - offset, 0f,
+                    colors, null, android.graphics.Shader.TileMode.CLAMP
+                )
+                tv.paint.shader = shader
+                tv.invalidate()
+            }
+        }
+    }
+
+    private fun applyGradientToSingle(tv: TextView, colors: IntArray) {
+        tv.post {
+            val width = tv.paint.measureText(tv.text.toString()).coerceAtLeast(1f)
+            val shader = android.graphics.LinearGradient(
+                0f, 0f, width, 0f, colors, null, android.graphics.Shader.TileMode.CLAMP
+            )
+            tv.paint.shader = shader
+            tv.invalidate()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -259,10 +286,20 @@ class MainActivity : AppCompatActivity() {
         val startTapBtn = findViewById<Button>(R.id.startTapBtn)
         addPressAnimation(startTapBtn)
 
+        val letters = listOf(letterB, letterI, letterN, letterG, letterO)
+        val letterRow = findViewById<View>(R.id.letterRow)
+        applyGradientToRow(
+            letterRow, letters,
+            intArrayOf(
+                android.graphics.Color.parseColor("#F0B429"),
+                android.graphics.Color.parseColor("#E67E22"),
+                android.graphics.Color.parseColor("#FF4757")
+            )
+        )
+
         val screenW = resources.displayMetrics.widthPixels.toFloat()
         val screenH = resources.displayMetrics.heightPixels.toFloat()
 
-        val letters = listOf(letterB, letterI, letterN, letterG, letterO)
         val fromX = floatArrayOf(-screenW, 0f, 0f, 0f, screenW)
         val fromY = floatArrayOf(0f, -screenH, -screenH, screenH, 0f)
         val fromRotation = floatArrayOf(-140f, 140f, -140f, 140f, -140f)
@@ -301,7 +338,7 @@ class MainActivity : AppCompatActivity() {
     // ---------- شاشة 2: القائمة الرئيسية ----------
     private fun setupWelcomeScreen() {
         val settingsBtn = findViewById<Button>(R.id.settingsIconBtn)
-        val cardNetwork = findViewById<Button>(R.id.cardNetwork)
+        val cardNetwork = findViewById<View>(R.id.cardNetwork)
         val playAgainBtn = findViewById<Button>(R.id.playAgainBtn)
         val winHomeBtn = findViewById<Button>(R.id.winHomeBtn)
 
@@ -317,13 +354,13 @@ class MainActivity : AppCompatActivity() {
         cardNetwork.setOnClickListener {
             showOnly(screenNetwork)
         }
-        val cardAI = findViewById<Button>(R.id.cardAI)
+        val cardAI = findViewById<View>(R.id.cardAI)
         addPressAnimation(cardAI)
         cardAI.setOnClickListener { openAiSetup() }
 
         val comingSoonIds = listOf(R.id.cardFriends, R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
         comingSoonIds.forEach { id ->
-            val btn = findViewById<Button>(id)
+            val btn = findViewById<View>(id)
             addPressAnimation(btn)
             btn.setOnClickListener {
                 Toast.makeText(this, "هاد النمط قريباً إن شاء الله 🙂", Toast.LENGTH_SHORT).show()
@@ -540,6 +577,7 @@ class MainActivity : AppCompatActivity() {
             btn.layoutParams = params
             val number = gridNumbers[i]
             if (marked.contains(number)) {
+                btn.text = "✗"
                 btn.isEnabled = false
                 btn.setBackgroundResource(R.drawable.bg_cell_marked)
                 btn.setTextColor(getColor(R.color.marked_text))
@@ -580,7 +618,10 @@ class MainActivity : AppCompatActivity() {
                 child.setBackgroundResource(R.drawable.bg_cell_marked)
                 child.setTextColor(getColor(R.color.marked_text))
                 child.animate().scaleX(1.15f).scaleY(1.15f).setDuration(120)
-                    .withEndAction { child.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }
+                    .withEndAction {
+                        child.text = "✗"
+                        child.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                    }
                     .start()
             }
         }
@@ -599,6 +640,9 @@ class MainActivity : AppCompatActivity() {
             lastWinWasByHuman = iWon
             winBadge.text = if (iWon) "🏆" else "😔"
             winTitleText.text = if (iWon) "!BINGO — فزت 🏆" else "خسرت — فاز الطرف الآخر"
+            applyGradientToSingle(winTitleText, intArrayOf(
+                android.graphics.Color.parseColor("#F0B429"), android.graphics.Color.parseColor("#E67E22")
+            ))
             winSubtitleText.text = ""
             playOutcomeSound(iWon)
             showOnly(screenWin)
@@ -829,6 +873,7 @@ class MainActivity : AppCompatActivity() {
             params.setMargins(4, 4, 4, 4)
             btn.layoutParams = params
             if (aiScratched.contains(number)) {
+                btn.text = "✗"
                 btn.isEnabled = false
                 btn.setBackgroundResource(R.drawable.bg_cell_marked)
                 btn.setTextColor(getColor(R.color.marked_text))
@@ -860,7 +905,10 @@ class MainActivity : AppCompatActivity() {
                 child.setBackgroundResource(R.drawable.bg_cell_marked)
                 child.setTextColor(getColor(R.color.marked_text))
                 child.animate().scaleX(1.15f).scaleY(1.15f).setDuration(120)
-                    .withEndAction { child.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }
+                    .withEndAction {
+                        child.text = "✗"
+                        child.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                    }
                     .start()
             }
         }
@@ -955,6 +1003,9 @@ class MainActivity : AppCompatActivity() {
 
         winBadge.text = if (humanWon) "🏆" else "😔"
         winTitleText.text = if (humanWon) "!BINGO — فزت 🏆" else "فاز ${winner.name} 🏆"
+        applyGradientToSingle(winTitleText, intArrayOf(
+            android.graphics.Color.parseColor("#F0B429"), android.graphics.Color.parseColor("#E67E22")
+        ))
         winSubtitleText.text = if (losers.isNotEmpty()) "خسر: ${losers.joinToString("، ")}" else ""
 
         playOutcomeSound(humanWon)
