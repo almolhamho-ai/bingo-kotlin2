@@ -3,13 +3,18 @@ package com.almolham.bingo
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.Button
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -18,6 +23,7 @@ import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.Collections
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private var gameStarted = false
 
     private var writer: PrintWriter? = null
+    private var activeSocket: Socket? = null
+    private var serverSocket: ServerSocket? = null
     private var myTurn = false
 
     // ---------- الشاشات ----------
@@ -37,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenNetwork: View
     private lateinit var screenGame: View
     private lateinit var screenWin: View
+    private var currentScreen: View? = null
 
     private lateinit var statusText: TextView
     private lateinit var networkStatusText: TextView
@@ -46,8 +55,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nameInput: EditText
     private lateinit var themeContainer: GridLayout
     private lateinit var winTitleText: TextView
+    private lateinit var winBadge: View
 
     private lateinit var prefs: android.content.SharedPreferences
+
+    private var backPressedOnce = false
+    private val backHandler = Handler(Looper.getMainLooper())
 
     // كل ثيم = لون أساسي + لون ثانوي (للتدرّج)، نفس أسلوب الذهبي الافتراضي
     private val themePresets = listOf(
@@ -85,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         nameInput = findViewById(R.id.nameInput)
         themeContainer = findViewById(R.id.themeContainer)
         winTitleText = findViewById(R.id.winTitleText)
+        winBadge = findViewById(R.id.winBadge)
 
         ipInput.setText(prefs.getString("last_ip", ""))
         currentThemeIndex = prefs.getInt("theme_index", 0)
@@ -93,6 +107,7 @@ class MainActivity : AppCompatActivity() {
         setupWelcomeScreen()
         setupSettingsScreen()
         setupNetworkScreen()
+        setupBackNavigation()
 
         val headlineTypeface = Typeface.create("sans-serif-black", Typeface.BOLD)
         welcomeGreeting.typeface = headlineTypeface
@@ -104,10 +119,73 @@ class MainActivity : AppCompatActivity() {
         showOnly(screenLoading)
     }
 
+    // ---------- زر الرجوع ----------
+    private fun setupBackNavigation() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when (currentScreen) {
+                    screenSettings -> showOnly(screenWelcome)
+                    screenNetwork -> {
+                        closeConnection()
+                        showOnly(screenWelcome)
+                    }
+                    screenGame -> {
+                        closeConnection()
+                        showOnly(screenWelcome)
+                    }
+                    screenWin -> {
+                        closeConnection()
+                        showOnly(screenWelcome)
+                    }
+                    screenWelcome -> {
+                        if (backPressedOnce) {
+                            finish()
+                        } else {
+                            backPressedOnce = true
+                            Toast.makeText(this@MainActivity, "اضغط رجوع مرة ثانية للخروج", Toast.LENGTH_SHORT).show()
+                            backHandler.postDelayed({ backPressedOnce = false }, 2000)
+                        }
+                    }
+                    else -> { /* شاشة التحميل: لا شي */ }
+                }
+            }
+        })
+    }
+
+    // إغلاق الاتصال بشكل نظيف (بدون تسريب سوكيت)
+    private fun closeConnection() {
+        gameStarted = false
+        Thread {
+            try { writer?.close() } catch (e: Exception) { }
+            try { activeSocket?.close() } catch (e: Exception) { }
+            try { serverSocket?.close() } catch (e: Exception) { }
+        }.start()
+        writer = null
+        activeSocket = null
+        serverSocket = null
+    }
+
     // إظهار شاشة وحدة بس وإخفاء الباقي
     private fun showOnly(screen: View) {
         listOf(screenLoading, screenWelcome, screenSettings, screenNetwork, screenGame, screenWin).forEach {
             it.visibility = if (it == screen) View.VISIBLE else View.GONE
+        }
+        currentScreen = screen
+        if (screen == screenWin) {
+            playWinCelebration()
+        }
+    }
+
+    // ---------- تأثير ضغط بسيط على الأزرار/البطاقات ----------
+    private fun addPressAnimation(view: View?) {
+        view ?: return
+        view.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(90).start()
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+            }
+            false // يسمح بمرور حدث الضغط (onClick) بشكل طبيعي
         }
     }
 
@@ -119,28 +197,37 @@ class MainActivity : AppCompatActivity() {
         val letterG = findViewById<TextView>(R.id.letterG)
         val letterO = findViewById<TextView>(R.id.letterO)
         val startTapBtn = findViewById<Button>(R.id.startTapBtn)
+        addPressAnimation(startTapBtn)
 
         val letters = listOf(letterB, letterI, letterN, letterG, letterO)
         val fromX = floatArrayOf(-600f, 0f, 0f, 0f, 600f)
         val fromY = floatArrayOf(0f, -600f, -600f, 600f, 0f)
+        val fromRotation = floatArrayOf(-140f, 140f, -140f, 140f, -140f)
         val delays = longArrayOf(50, 180, 310, 440, 570)
 
         letters.forEachIndexed { i, tv ->
             tv.translationX = fromX[i]
             tv.translationY = fromY[i]
+            tv.rotation = fromRotation[i]
             tv.alpha = 0f
             tv.animate()
-                .translationX(0f).translationY(0f).alpha(1f)
+                .translationX(0f).translationY(0f).rotation(0f).alpha(1f)
+                .setInterpolator(OvershootInterpolator(2.2f))
                 .setStartDelay(delays[i])
-                .setDuration(500)
+                .setDuration(650)
                 .start()
         }
 
         startTapBtn.postDelayed({
             startTapBtn.visibility = View.VISIBLE
             startTapBtn.alpha = 0f
-            startTapBtn.animate().alpha(1f).setDuration(400).start()
-        }, 1300)
+            startTapBtn.scaleX = 0.6f
+            startTapBtn.scaleY = 0.6f
+            startTapBtn.animate().alpha(1f).scaleX(1f).scaleY(1f)
+                .setInterpolator(OvershootInterpolator(2f))
+                .setDuration(450)
+                .start()
+        }, 1400)
 
         startTapBtn.setOnClickListener {
             welcomeGreeting.text = "أهلاً، ${prefs.getString("player_name", "لاعب")}"
@@ -150,31 +237,50 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- شاشة 2: القائمة الرئيسية ----------
     private fun setupWelcomeScreen() {
-        findViewById<Button>(R.id.settingsIconBtn).setOnClickListener {
+        val settingsBtn = findViewById<Button>(R.id.settingsIconBtn)
+        val cardNetwork = findViewById<Button>(R.id.cardNetwork)
+        val playAgainBtn = findViewById<Button>(R.id.playAgainBtn)
+        val winHomeBtn = findViewById<Button>(R.id.winHomeBtn)
+
+        addPressAnimation(settingsBtn)
+        addPressAnimation(cardNetwork)
+        addPressAnimation(playAgainBtn)
+        addPressAnimation(winHomeBtn)
+
+        settingsBtn.setOnClickListener {
             nameInput.setText(prefs.getString("player_name", "لاعب"))
             showOnly(screenSettings)
         }
-        findViewById<Button>(R.id.cardNetwork).setOnClickListener {
+        cardNetwork.setOnClickListener {
             showOnly(screenNetwork)
         }
         val comingSoonIds = listOf(R.id.cardAI, R.id.cardFriends, R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
         comingSoonIds.forEach { id ->
-            findViewById<Button>(id).setOnClickListener {
+            val btn = findViewById<Button>(id)
+            addPressAnimation(btn)
+            btn.setOnClickListener {
                 Toast.makeText(this, "هاد النمط قريباً إن شاء الله 🙂", Toast.LENGTH_SHORT).show()
             }
         }
 
-        findViewById<Button>(R.id.playAgainBtn).setOnClickListener {
+        playAgainBtn.setOnClickListener {
+            closeConnection()
             showOnly(screenWelcome)
         }
-        findViewById<Button>(R.id.winHomeBtn).setOnClickListener {
+        winHomeBtn.setOnClickListener {
+            closeConnection()
             showOnly(screenWelcome)
         }
     }
 
     // ---------- شاشة 3: الإعدادات ----------
     private fun setupSettingsScreen() {
-        findViewById<Button>(R.id.backFromSettingsBtn).setOnClickListener {
+        val backBtn = findViewById<Button>(R.id.backFromSettingsBtn)
+        val saveBtn = findViewById<Button>(R.id.saveSettingsBtn)
+        addPressAnimation(backBtn)
+        addPressAnimation(saveBtn)
+
+        backBtn.setOnClickListener {
             showOnly(screenWelcome)
         }
 
@@ -196,6 +302,7 @@ class MainActivity : AppCompatActivity() {
             params.columnSpec = GridLayout.spec(index % 5)
             params.rowSpec = GridLayout.spec(index / 5)
             dot.layoutParams = params
+            addPressAnimation(dot)
             dot.setOnClickListener {
                 currentThemeIndex = index
                 applyTheme(index)
@@ -204,7 +311,7 @@ class MainActivity : AppCompatActivity() {
             themeContainer.addView(dot)
         }
 
-        findViewById<Button>(R.id.saveSettingsBtn).setOnClickListener {
+        saveBtn.setOnClickListener {
             val name = nameInput.text.toString().trim().ifEmpty { "لاعب" }
             prefs.edit()
                 .putString("player_name", name)
@@ -245,11 +352,19 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- شاشة 4: الشبكة ----------
     private fun setupNetworkScreen() {
-        findViewById<Button>(R.id.backFromNetworkBtn).setOnClickListener {
+        val backBtn = findViewById<Button>(R.id.backFromNetworkBtn)
+        val hostBtn = findViewById<Button>(R.id.hostBtn)
+        val joinBtn = findViewById<Button>(R.id.joinBtn)
+        addPressAnimation(backBtn)
+        addPressAnimation(hostBtn)
+        addPressAnimation(joinBtn)
+
+        backBtn.setOnClickListener {
+            closeConnection()
             showOnly(screenWelcome)
         }
-        findViewById<Button>(R.id.hostBtn).setOnClickListener { startHost() }
-        findViewById<Button>(R.id.joinBtn).setOnClickListener { startJoin() }
+        hostBtn.setOnClickListener { startHost() }
+        joinBtn.setOnClickListener { startJoin() }
     }
 
     private fun startHost() {
@@ -258,8 +373,10 @@ class MainActivity : AppCompatActivity() {
 
         Thread {
             try {
-                val serverSocket = ServerSocket(8888)
-                val client = serverSocket.accept()
+                val server = ServerSocket(8888)
+                serverSocket = server
+                val client = server.accept()
+                activeSocket = client
                 writer = PrintWriter(client.getOutputStream(), true)
                 val reader = BufferedReader(InputStreamReader(client.getInputStream()))
 
@@ -296,6 +413,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 val client = Socket(ip, 8888)
+                activeSocket = client
                 writer = PrintWriter(client.getOutputStream(), true)
                 val reader = BufferedReader(InputStreamReader(client.getInputStream()))
 
@@ -333,7 +451,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            runOnUiThread { statusText.text = "انقطع الاتصال" }
+            runOnUiThread { if (currentScreen == screenGame) statusText.text = "انقطع الاتصال" }
         }
     }
 
@@ -360,6 +478,7 @@ class MainActivity : AppCompatActivity() {
                 btn.setBackgroundResource(R.drawable.bg_cell)
                 btn.setTextColor(getColor(R.color.text_main))
             }
+            addPressAnimation(btn)
             btn.setOnClickListener { onCellTapped(number) }
             grid.addView(btn)
         }
@@ -376,7 +495,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 writer?.println(msg)
             } catch (e: Exception) {
-                runOnUiThread { statusText.text = "فشل الإرسال: ${e.message}" }
+                runOnUiThread { if (currentScreen == screenGame) statusText.text = "فشل الإرسال: ${e.message}" }
             }
         }.start()
     }
@@ -391,6 +510,9 @@ class MainActivity : AppCompatActivity() {
                 child.isEnabled = false
                 child.setBackgroundResource(R.drawable.bg_cell_marked)
                 child.setTextColor(getColor(R.color.marked_text))
+                child.animate().scaleX(1.15f).scaleY(1.15f).setDuration(120)
+                    .withEndAction { child.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }
+                    .start()
             }
         }
 
@@ -413,6 +535,58 @@ class MainActivity : AppCompatActivity() {
         myTurn = fromRemote
         statusText.text = if (myTurn) "دورك — اضغط أي رقم (خطوط: $linesCompleted)"
                            else "دور الطرف الآخر (خطوط: $linesCompleted)"
+    }
+
+    // ---------- شاشة 6: احتفال الفوز ----------
+    private fun playWinCelebration() {
+        winBadge.scaleX = 0f
+        winBadge.scaleY = 0f
+        winBadge.animate().scaleX(1f).scaleY(1f)
+            .setInterpolator(OvershootInterpolator(3f))
+            .setDuration(500)
+            .start()
+
+        winTitleText.alpha = 0f
+        winTitleText.translationY = 30f
+        winTitleText.animate().alpha(1f).translationY(0f)
+            .setStartDelay(200)
+            .setDuration(400)
+            .start()
+
+        val container = screenWin as? ViewGroup ?: return
+        val emojis = listOf("🎉", "✨", "⭐", "🎊", "🥳")
+        val screenWidth = resources.displayMetrics.widthPixels.toFloat()
+
+        for (i in 0 until 18) {
+            val piece = TextView(this)
+            piece.text = emojis[Random.nextInt(emojis.size)]
+            piece.textSize = 20f
+            piece.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            container.addView(piece)
+
+            val startX = Random.nextFloat() * screenWidth - screenWidth / 2f
+            piece.translationX = startX
+            piece.translationY = -500f
+            piece.alpha = 0f
+            piece.rotation = Random.nextFloat() * 360f
+
+            piece.animate()
+                .translationY(1100f)
+                .translationX(startX + Random.nextInt(-150, 150))
+                .rotation(piece.rotation + 380f)
+                .alpha(1f)
+                .setStartDelay(Random.nextLong(0, 350))
+                .setDuration(1500)
+                .withEndAction {
+                    piece.animate().alpha(0f).setDuration(250)
+                        .withEndAction { container.removeView(piece) }
+                        .start()
+                }
+                .start()
+        }
     }
 
     private fun countCompletedLines(): Int {
@@ -453,5 +627,10 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) { }
         return "غير معروف"
+    }
+
+    override fun onDestroy() {
+        closeConnection()
+        super.onDestroy()
     }
 }
