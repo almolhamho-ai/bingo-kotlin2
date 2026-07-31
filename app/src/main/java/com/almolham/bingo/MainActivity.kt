@@ -1,7 +1,9 @@
 package com.almolham.bingo
 
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -34,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenSettings: View
     private lateinit var screenNetwork: View
     private lateinit var screenGame: View
+    private lateinit var screenWin: View
 
     private lateinit var statusText: TextView
     private lateinit var networkStatusText: TextView
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var welcomeGreeting: TextView
     private lateinit var nameInput: EditText
     private lateinit var themeContainer: GridLayout
+    private lateinit var winTitleText: TextView
 
     private lateinit var prefs: android.content.SharedPreferences
 
@@ -71,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         screenSettings = findViewById(R.id.screenSettings)
         screenNetwork = findViewById(R.id.screenNetwork)
         screenGame = findViewById(R.id.screenGame)
+        screenWin = findViewById(R.id.screenWin)
 
         statusText = findViewById(R.id.statusText)
         networkStatusText = findViewById(R.id.networkStatusText)
@@ -79,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         welcomeGreeting = findViewById(R.id.welcomeGreeting)
         nameInput = findViewById(R.id.nameInput)
         themeContainer = findViewById(R.id.themeContainer)
+        winTitleText = findViewById(R.id.winTitleText)
 
         ipInput.setText(prefs.getString("last_ip", ""))
         currentThemeIndex = prefs.getInt("theme_index", 0)
@@ -88,13 +94,19 @@ class MainActivity : AppCompatActivity() {
         setupSettingsScreen()
         setupNetworkScreen()
 
+        val headlineTypeface = Typeface.create("sans-serif-black", Typeface.BOLD)
+        welcomeGreeting.typeface = headlineTypeface
+        listOf(R.id.letterB, R.id.letterI, R.id.letterN, R.id.letterG, R.id.letterO).forEach { id ->
+            findViewById<TextView>(id).typeface = headlineTypeface
+        }
+
         applyTheme(currentThemeIndex)
         showOnly(screenLoading)
     }
 
     // إظهار شاشة وحدة بس وإخفاء الباقي
     private fun showOnly(screen: View) {
-        listOf(screenLoading, screenWelcome, screenSettings, screenNetwork, screenGame).forEach {
+        listOf(screenLoading, screenWelcome, screenSettings, screenNetwork, screenGame, screenWin).forEach {
             it.visibility = if (it == screen) View.VISIBLE else View.GONE
         }
     }
@@ -151,6 +163,13 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "هاد النمط قريباً إن شاء الله 🙂", Toast.LENGTH_SHORT).show()
             }
         }
+
+        findViewById<Button>(R.id.playAgainBtn).setOnClickListener {
+            showOnly(screenWelcome)
+        }
+        findViewById<Button>(R.id.winHomeBtn).setOnClickListener {
+            showOnly(screenWelcome)
+        }
     }
 
     // ---------- شاشة 3: الإعدادات ----------
@@ -205,7 +224,7 @@ class MainActivity : AppCompatActivity() {
         val gradient = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(startColor, endColor))
         gradient.cornerRadius = 200f
 
-        val buttonIds = listOf(R.id.startTapBtn, R.id.cardNetwork, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn)
+        val buttonIds = listOf(R.id.startTapBtn, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn, R.id.playAgainBtn)
         buttonIds.forEach { id ->
             findViewById<Button>(id)?.background = gradient.constantState?.newDrawable()
         }
@@ -381,8 +400,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (linesCompleted >= 5) {
-            statusText.text = "🏆 اكتمل BINGO! (5 خطوط)"
             gameStarted = false
+            // اللي ضغط الرقم اللي كمّل الفوز هو الفائز الحقيقي:
+            // fromRemote = false يعني أنا يلي ضغطت → أنا الفائز
+            // fromRemote = true يعني الرسالة إجت من الطرف الآخر → هو الفائز، أنا خسرت
+            val iWon = !fromRemote
+            winTitleText.text = if (iWon) "!BINGO — فزت 🏆" else "خسرت — فاز الطرف الآخر"
+            showOnly(screenWin)
             return
         }
 
