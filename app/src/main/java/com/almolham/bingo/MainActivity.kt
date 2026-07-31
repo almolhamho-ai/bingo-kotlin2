@@ -60,8 +60,9 @@ class MainActivity : AppCompatActivity() {
     private val speedFactors = floatArrayOf(1.7f, 1f, 0.5f)
 
     private var pendingArrangement: MutableList<Int>? = null
-    private val arrangingTaps = mutableListOf<Int>()
+    private val arrangeSelected = mutableListOf<Int>()
     private val aiNameInputs = mutableListOf<EditText>()
+    private lateinit var aiCountButtons: List<Button>
     private lateinit var diffButtons: List<Button>
     private lateinit var speedButtons: List<Button>
 
@@ -96,10 +97,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var winSubtitleText: TextView
     private lateinit var winBadge: TextView
 
-    private lateinit var aiCountText: TextView
     private lateinit var aiNamesContainer: LinearLayout
     private lateinit var arrangeStatusText: TextView
-    private lateinit var arrangeGrid: GridLayout
+    private lateinit var numberPool: GridLayout
+    private lateinit var arrangePreviewGrid: GridLayout
+    private lateinit var arrRandomBtn: Button
+    private lateinit var arrConfirmBtn: Button
 
     private lateinit var prefs: android.content.SharedPreferences
 
@@ -174,10 +177,12 @@ class MainActivity : AppCompatActivity() {
         winSubtitleText = findViewById(R.id.winSubtitleText)
         winBadge = findViewById(R.id.winBadge)
 
-        aiCountText = findViewById(R.id.aiCountText)
         aiNamesContainer = findViewById(R.id.aiNamesContainer)
         arrangeStatusText = findViewById(R.id.arrangeStatusText)
-        arrangeGrid = findViewById(R.id.arrangeGrid)
+        numberPool = findViewById(R.id.numberPool)
+        arrangePreviewGrid = findViewById(R.id.arrangePreviewGrid)
+        arrRandomBtn = findViewById(R.id.arrRandomBtn)
+        arrConfirmBtn = findViewById(R.id.arrConfirmBtn)
 
         ipInput.setText(prefs.getString("last_ip", ""))
         currentThemeIndex = prefs.getInt("theme_index", 0)
@@ -684,12 +689,14 @@ class MainActivity : AppCompatActivity() {
     // ================================================================
     private fun setupAiSetupScreen() {
         val backBtn = findViewById<Button>(R.id.backFromAiSetupBtn)
-        val minusBtn = findViewById<Button>(R.id.aiCountMinusBtn)
-        val plusBtn = findViewById<Button>(R.id.aiCountPlusBtn)
         val arrangeManualBtn = findViewById<Button>(R.id.arrangeManualBtn)
         val arrangeRandomBtn = findViewById<Button>(R.id.arrangeRandomBtn)
         val startBtn = findViewById<Button>(R.id.startAiSetupBtn)
 
+        aiCountButtons = listOf(
+            findViewById(R.id.aiCount1Btn), findViewById(R.id.aiCount2Btn),
+            findViewById(R.id.aiCount3Btn), findViewById(R.id.aiCount4Btn)
+        )
         diffButtons = listOf(
             findViewById(R.id.diffEasyBtn), findViewById(R.id.diffMediumBtn),
             findViewById(R.id.diffHardBtn), findViewById(R.id.diffExpertBtn)
@@ -698,35 +705,39 @@ class MainActivity : AppCompatActivity() {
             findViewById(R.id.speedSlowBtn), findViewById(R.id.speedMediumBtn), findViewById(R.id.speedFastBtn)
         )
 
-        listOf(backBtn, minusBtn, plusBtn, arrangeManualBtn, arrangeRandomBtn, startBtn).forEach { addPressAnimation(it) }
-        (diffButtons + speedButtons).forEach { addPressAnimation(it) }
+        listOf(backBtn, arrangeManualBtn, arrangeRandomBtn, startBtn).forEach { addPressAnimation(it) }
+        (aiCountButtons + diffButtons + speedButtons).forEach { addPressAnimation(it) }
 
         backBtn.setOnClickListener { showOnly(screenWelcome) }
 
-        minusBtn.setOnClickListener {
-            if (aiOpponentCount > 1) { aiOpponentCount--; updateAiCountUI() }
-        }
-        plusBtn.setOnClickListener {
-            if (aiOpponentCount < 5) { aiOpponentCount++; updateAiCountUI() }
+        aiCountButtons.forEachIndexed { i, btn ->
+            btn.setOnClickListener {
+                aiOpponentCount = i + 1
+                highlightUniform(aiCountButtons, i)
+                rebuildAiNameInputs()
+            }
         }
 
         val difficulties = listOf("easy", "medium", "hard", "expert")
         diffButtons.forEachIndexed { i, btn ->
             btn.setOnClickListener {
                 aiDifficulty = difficulties[i]
-                highlightGroup(diffButtons, i)
+                highlightDifficulty(i)
             }
         }
         speedButtons.forEachIndexed { i, btn ->
             btn.setOnClickListener {
                 aiSpeedIndex = i
-                highlightGroup(speedButtons, i)
+                highlightUniform(speedButtons, i)
             }
         }
 
         arrangeManualBtn.setOnClickListener {
-            arrangingTaps.clear()
-            buildArrangeGrid()
+            arrangeSelected.clear()
+            renderPool()
+            renderPreviewGrid()
+            arrConfirmBtn.isEnabled = false
+            updateConfirmBtnStyle()
             showOnly(screenArrange)
         }
         arrangeRandomBtn.setOnClickListener {
@@ -744,21 +755,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun highlightGroup(buttons: List<Button>, selectedIndex: Int) {
+    // تفعيل موحّد بلون ذهبي (يستخدم لعدد الخصوم والسرعة، تماماً متل choice-btn.selected بالأصل)
+    private fun highlightUniform(buttons: List<Button>, selectedIndex: Int) {
         buttons.forEachIndexed { i, b ->
             if (i == selectedIndex) {
-                b.setBackgroundResource(R.drawable.bg_button_gold)
-                b.setTextColor(getColor(R.color.dark_text_on_gold))
+                b.setBackgroundResource(R.drawable.bg_choice_selected_gold)
+                b.setTextColor(getColor(R.color.gold))
             } else {
-                b.setBackgroundResource(R.drawable.bg_input)
+                b.setBackgroundResource(R.drawable.bg_choice)
                 b.setTextColor(getColor(R.color.text_main))
             }
         }
     }
 
-    private fun updateAiCountUI() {
-        aiCountText.text = aiOpponentCount.toString()
-        rebuildAiNameInputs()
+    // تفعيل الصعوبة بلون مختلف لكل مستوى، تماماً متل النسخة الأصلية:
+    // سهل=أخضر، متوسط=أزرق، صعب=ذهبي، خبير=أحمر
+    private fun highlightDifficulty(selectedIndex: Int) {
+        val selectedDrawables = listOf(
+            R.drawable.bg_choice_selected_green, R.drawable.bg_choice_selected_blue,
+            R.drawable.bg_choice_selected_gold, R.drawable.bg_choice_selected_red
+        )
+        val selectedColors = listOf(
+            getColor(R.color.green), getColor(R.color.blue), getColor(R.color.gold), getColor(R.color.red)
+        )
+        diffButtons.forEachIndexed { i, b ->
+            if (i == selectedIndex) {
+                b.setBackgroundResource(selectedDrawables[i])
+                b.setTextColor(selectedColors[i])
+            } else {
+                b.setBackgroundResource(R.drawable.bg_choice)
+                b.setTextColor(getColor(R.color.text_main))
+            }
+        }
     }
 
     private fun rebuildAiNameInputs() {
@@ -784,52 +812,128 @@ class MainActivity : AppCompatActivity() {
         aiDifficulty = "medium"
         aiSpeedIndex = 1
         pendingArrangement = null
-        arrangingTaps.clear()
-        updateAiCountUI()
-        highlightGroup(diffButtons, 1)
-        highlightGroup(speedButtons, 1)
+        arrangeSelected.clear()
+        rebuildAiNameInputs()
+        highlightUniform(aiCountButtons, 0)
+        highlightDifficulty(1)
+        highlightUniform(speedButtons, 1)
         arrangeStatusText.text = "⚠️ لسا لازم ترتب شبكتك (يدوي أو عشوائي)"
         showOnly(screenAiSetup)
     }
 
     // ================================================================
-    // ========== شاشة 8: ترتيب الشبكة يدوياً ==========
+    // ========== شاشة 8: ترتيب الشبكة يدوياً (مسبح أرقام + معاينة حية) ==========
     // ================================================================
     private fun setupArrangeScreen() {
         val backBtn = findViewById<Button>(R.id.backFromArrangeBtn)
         addPressAnimation(backBtn)
+        addPressAnimation(arrRandomBtn)
+        addPressAnimation(arrConfirmBtn)
+
         backBtn.setOnClickListener { showOnly(screenAiSetup) }
+
+        arrRandomBtn.setOnClickListener {
+            arrangeSelected.clear()
+            arrangeSelected.addAll((1..25).shuffled())
+            renderPool()
+            renderPreviewGrid()
+            arrConfirmBtn.isEnabled = true
+            updateConfirmBtnStyle()
+        }
+
+        arrConfirmBtn.setOnClickListener {
+            if (arrangeSelected.size < 25) return@setOnClickListener
+            pendingArrangement = arrangeSelected.toMutableList()
+            arrangeStatusText.text = "✅ ترتيب يدوي جاهز"
+            showOnly(screenAiSetup)
+        }
     }
 
-    private fun buildArrangeGrid() {
-        arrangeGrid.removeAllViews()
-        for (i in 1..25) {
+    // مسبح الأرقام 1-25 — الضغط عليهم يضيفهم بالترتيب لشبكتك، ويصير باهت بعد ما يُختار
+    private fun renderPool() {
+        numberPool.removeAllViews()
+        for (n in 1..25) {
             val btn = Button(this)
-            btn.text = i.toString()
-            btn.textSize = 14f
+            btn.text = n.toString()
+            btn.textSize = 13f
             val params = GridLayout.LayoutParams()
             params.width = 0
             params.height = GridLayout.LayoutParams.WRAP_CONTENT
-            params.columnSpec = GridLayout.spec((i - 1) % 5, 1f)
-            params.rowSpec = GridLayout.spec((i - 1) / 5)
-            params.setMargins(4, 4, 4, 4)
+            params.columnSpec = GridLayout.spec((n - 1) % 5, 1f)
+            params.rowSpec = GridLayout.spec((n - 1) / 5)
+            params.setMargins(3, 3, 3, 3)
             btn.layoutParams = params
-            btn.setBackgroundResource(R.drawable.bg_cell)
+            btn.setBackgroundResource(R.drawable.bg_choice)
             btn.setTextColor(getColor(R.color.text_main))
-            addPressAnimation(btn)
-            btn.setOnClickListener {
-                if (arrangingTaps.contains(i)) return@setOnClickListener
-                arrangingTaps.add(i)
+            if (arrangeSelected.contains(n)) {
+                btn.alpha = 0.15f
+                btn.scaleX = 0.88f
+                btn.scaleY = 0.88f
                 btn.isEnabled = false
-                btn.setBackgroundResource(R.drawable.bg_cell_marked)
-                btn.setTextColor(getColor(R.color.marked_text))
-                if (arrangingTaps.size == 25) {
-                    pendingArrangement = arrangingTaps.toMutableList()
-                    arrangeStatusText.text = "✅ ترتيب يدوي جاهز"
-                    showOnly(screenAiSetup)
-                }
+            } else {
+                btn.alpha = 1f
+                btn.scaleX = 1f
+                btn.scaleY = 1f
+                btn.isEnabled = true
+                addPressAnimation(btn)
+                btn.setOnClickListener { pickArrangeNum(n) }
             }
-            arrangeGrid.addView(btn)
+            numberPool.addView(btn)
+        }
+    }
+
+    // معاينة الشبكة الحية — بتتعبى مباشرة وأنت تختار، والضغط على خانة معبّاة بيلغيها
+    private fun renderPreviewGrid() {
+        arrangePreviewGrid.removeAllViews()
+        for (i in 0 until 25) {
+            val btn = Button(this)
+            val params = GridLayout.LayoutParams()
+            params.width = 0
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT
+            params.columnSpec = GridLayout.spec(i % 5, 1f)
+            params.rowSpec = GridLayout.spec(i / 5)
+            params.setMargins(3, 3, 3, 3)
+            btn.layoutParams = params
+            if (i < arrangeSelected.size) {
+                btn.text = arrangeSelected[i].toString()
+                btn.setBackgroundResource(R.drawable.bg_arrange_cell_filled)
+                btn.setTextColor(getColor(R.color.gold))
+            } else {
+                btn.text = ""
+                btn.setBackgroundResource(R.drawable.bg_arrange_cell)
+                btn.setTextColor(getColor(R.color.text_main))
+            }
+            val idx = i
+            btn.setOnClickListener { removeArrangeAt(idx) }
+            arrangePreviewGrid.addView(btn)
+        }
+    }
+
+    private fun pickArrangeNum(n: Int) {
+        if (arrangeSelected.contains(n) || arrangeSelected.size >= 25) return
+        arrangeSelected.add(n)
+        renderPool()
+        renderPreviewGrid()
+        arrConfirmBtn.isEnabled = arrangeSelected.size >= 25
+        updateConfirmBtnStyle()
+    }
+
+    private fun removeArrangeAt(i: Int) {
+        if (i >= arrangeSelected.size) return
+        arrangeSelected.removeAt(i)
+        renderPool()
+        renderPreviewGrid()
+        arrConfirmBtn.isEnabled = false
+        updateConfirmBtnStyle()
+    }
+
+    private fun updateConfirmBtnStyle() {
+        if (arrConfirmBtn.isEnabled) {
+            arrConfirmBtn.setBackgroundResource(R.drawable.bg_arr_confirm)
+            arrConfirmBtn.setTextColor(android.graphics.Color.WHITE)
+        } else {
+            arrConfirmBtn.setBackgroundResource(R.drawable.bg_input)
+            arrConfirmBtn.setTextColor(getColor(R.color.muted))
         }
     }
 
