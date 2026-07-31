@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- منقولة بالضبط عن نظام ألوان bingo-v18.html الأصلي -->
     <color name="bg">#080812</color>
-    <color name="surface">#10101e</color>
-    <color name="card">#16162a</color>
-    <color name="border">#2a2a4a</color>
-    <color name="gold">#f0b429</color>
-    <color name="gold2">#e67e22</color>
-    <color name="green">#00c97a</color>
-    <color name="red">#ff4757</color>
-    <color name="blue">#3d8bff</color>
-    <color name="purple">#8b5cf6</color>
-    <color name="text_main">#e8e8f8</color>
-    <color name="muted">#6b7280</color>
-    <color name="marked">#1e1e38</color>
-    <color name="marked_border">#3a3a5a</color>
-    <color name="marked_text">#4a4a6a</color>
-    <color name="dark_text_on_gold">#1a1000</color>
+    <color name="surface">#10101E</color>
+    <color name="card">#16162A</color>
+    <color name="border">#2A2A4A</color>
+
+    <color name="gold">#F0B429</color>
+    <color name="gold2">#E67E22</color>
+    <color name="green">#00C97A</color>
+    <color name="red">#FF4757</color>
+    <color name="blue">#3D8BFF</color>
+    <color name="purple">#8B5CF6</color>
+
+    <color name="text_main">#E8E8F8</color>
+    <color name="muted">#6B7280</color>
+
+    <color name="marked">#1E1E38</color>
+    <color name="marked_border">#3A3A5A</color>
+    <color name="marked_text">#4A4A6A</color>
+
+    <color name="dark_text_on_gold">#1A1000</color>
 </resources>
