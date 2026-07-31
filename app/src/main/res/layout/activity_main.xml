@@ -303,8 +303,18 @@
             android:textSize="36sp"
             android:textStyle="bold"
             android:letterSpacing="0.1"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="8dp"
             android:text="!BINGO" />
+
+        <TextView
+            android:id="@+id/winSubtitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/muted"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginBottom="28dp"
+            android:text="" />
 
         <Button
             android:id="@+id/playAgainBtn"
@@ -330,6 +340,220 @@
             android:background="@android:color/transparent"
             android:textColor="@color/muted"
             android:text="القائمة الرئيسية" />
+    </LinearLayout>
+
+    <!-- ========== شاشة 7: إعدادات اللعب ضد الذكاء الاصطناعي ========== -->
+    <ScrollView
+        android:id="@+id/screenAiSetup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <Button
+                android:id="@+id/backFromAiSetupBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@color/muted"
+                android:layout_marginBottom="10dp"
+                android:text="→ رجوع" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gold"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp"
+                android:text="إعدادات اللعب ضد الذكاء الاصطناعي" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muted"
+                android:layout_marginBottom="6dp"
+                android:text="عدد خصوم الذكاء الاصطناعي" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="14dp">
+
+                <Button
+                    android:id="@+id/aiCountMinusBtn"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_input"
+                    android:textColor="@color/text_main"
+                    android:text="−" />
+
+                <TextView
+                    android:id="@+id/aiCountText"
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/text_main"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:text="1" />
+
+                <Button
+                    android:id="@+id/aiCountPlusBtn"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_input"
+                    android:textColor="@color/text_main"
+                    android:text="+" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/aiNamesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muted"
+                android:layout_marginBottom="6dp"
+                android:text="مستوى الصعوبة" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <Button android:id="@+id/diffEasyBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="سهل" />
+                <Button android:id="@+id/diffMediumBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="متوسط" />
+                <Button android:id="@+id/diffHardBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="صعب" />
+                <Button android:id="@+id/diffExpertBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="خبير" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muted"
+                android:layout_marginBottom="6dp"
+                android:text="سرعة الذكاء الاصطناعي" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <Button android:id="@+id/speedSlowBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="🐢 بطيء" />
+                <Button android:id="@+id/speedMediumBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="🚶 وسط" />
+                <Button android:id="@+id/speedFastBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_input" android:textColor="@color/text_main" android:textSize="12sp" android:text="⚡ سريع" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muted"
+                android:layout_marginBottom="6dp"
+                android:text="ترتيب شبكتك" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <Button
+                    android:id="@+id/arrangeManualBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_input"
+                    android:textColor="@color/text_main"
+                    android:textSize="12sp"
+                    android:text="✋ ترتيب يدوي" />
+
+                <Button
+                    android:id="@+id/arrangeRandomBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input"
+                    android:textColor="@color/text_main"
+                    android:textSize="12sp"
+                    android:text="🔀 ترتيب عشوائي" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/arrangeStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/muted"
+                android:textSize="13sp"
+                android:layout_marginBottom="20dp"
+                android:text="⚠️ لسا لازم ترتب شبكتك (يدوي أو عشوائي)" />
+
+            <Button
+                android:id="@+id/startAiSetupBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_button_gold"
+                app:backgroundTint="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:textColor="@color/dark_text_on_gold"
+                android:textStyle="bold"
+                android:padding="14dp"
+                android:text="ابدأ اللعبة 🎱" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ========== شاشة 8: ترتيب الشبكة يدوياً ========== -->
+    <LinearLayout
+        android:id="@+id/screenArrange"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/backFromArrangeBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:background="@android:color/transparent"
+            android:textColor="@color/muted"
+            android:layout_marginBottom="10dp"
+            android:text="→ رجوع" />
+
+        <TextView
+            android:id="@+id/arrangeTitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gold"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_marginBottom="14dp"
+            android:text="اضغط على الأرقام بالترتيب اللي بدك ياه لملء شبكتك" />
+
+        <GridLayout
+            android:id="@+id/arrangeGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="5"
+            android:rowCount="5" />
     </LinearLayout>
 
 </FrameLayout>
