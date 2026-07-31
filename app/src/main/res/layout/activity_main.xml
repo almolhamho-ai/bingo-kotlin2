@@ -30,6 +30,7 @@
 
         <Button
             android:id="@+id/startTapBtn"
+            android:elevation="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="44dp"
@@ -75,35 +76,124 @@
             android:layout_marginBottom="24dp"
             android:text="أهلاً" />
 
-        <Button android:id="@+id/cardNetwork" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_network" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp" android:layout_marginBottom="10dp"
-            android:text="🌐 لعب شبكي" />
+        <LinearLayout
+            android:id="@+id/cardAI"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_ai"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="📱" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="العب ضد الهاتف" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="تحدَّ الذكاء الاصطناعي" android:textColor="#CCFFFFFF" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button android:id="@+id/cardAI" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_ai" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp" android:layout_marginBottom="10dp"
-            android:text="🤖 ضد الذكاء الاصطناعي (قريباً)" />
+        <LinearLayout
+            android:id="@+id/cardFriends"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_friends"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="👥" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اللعب مع الأصدقاء" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="تمرير الهاتف بينكم (قريباً)" android:textColor="#CCFFFFFF" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button android:id="@+id/cardFriends" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_friends" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp" android:layout_marginBottom="10dp"
-            android:text="👥 أصدقاء (قريباً)" />
+        <LinearLayout
+            android:id="@+id/cardNetwork"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_network"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="📶" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اللعب الشبكي" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="عدة أجهزة عبر نقطة اتصال، بدون إنترنت" android:textColor="#CCFFFFFF" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button android:id="@+id/cardLevels" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_levels" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp" android:layout_marginBottom="10dp"
-            android:text="🏆 مستويات (قريباً)" />
+        <LinearLayout
+            android:id="@+id/cardDaily"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_daily"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="🗓️" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="التحدي اليومي" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="تحدٍ جديد كل يوم (قريباً)" android:textColor="#CCFFFFFF" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button android:id="@+id/cardDaily" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_daily" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp" android:layout_marginBottom="10dp"
-            android:text="📅 تحدي يومي (قريباً)" />
+        <LinearLayout
+            android:id="@+id/cardTournament"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_tournament"
+            android:padding="14dp"
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="🏆" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="بطولة الأصدقاء" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4 أو 8 لاعبين، إقصاء مباشر (قريباً)" android:textColor="#CCFFFFFF" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
 
-        <Button android:id="@+id/cardTournament" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:background="@drawable/bg_card_tournament" android:textColor="#FFFFFF" android:textStyle="bold"
-            android:padding="16dp"
-            android:text="🏅 بطولة (قريباً)" />
+        <LinearLayout
+            android:id="@+id/cardLevels"
+            android:elevation="6dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_levels"
+            android:padding="14dp"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView android:layout_width="50dp" android:layout_height="50dp" android:layout_marginStart="14dp"
+                android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="🎯" android:textSize="22sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="14dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المستويات" android:textColor="#1A1000" android:textStyle="bold" android:textSize="15sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="100 مستوى مليء بالتحدي (قريباً)" android:textColor="#661A1000" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- ========== شاشة 3: الإعدادات ========== -->
@@ -148,6 +238,7 @@
 
         <Button
             android:id="@+id/saveSettingsBtn"
+            android:elevation="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_button_gold"
@@ -214,6 +305,7 @@
 
             <Button
                 android:id="@+id/hostBtn"
+            android:elevation="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -228,6 +320,7 @@
 
             <Button
                 android:id="@+id/joinBtn"
+            android:elevation="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -287,6 +380,7 @@
 
         <TextView
             android:id="@+id/winBadge"
+            android:elevation="14dp"
             android:layout_width="110dp"
             android:layout_height="110dp"
             android:gravity="center"
@@ -318,6 +412,7 @@
 
         <Button
             android:id="@+id/playAgainBtn"
+            android:elevation="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="40dp"
@@ -372,6 +467,13 @@
                 android:textSize="18sp"
                 android:layout_marginBottom="16dp"
                 android:text="إعدادات اللعب ضد الذكاء الاصطناعي" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_panel"
+                android:padding="18dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -504,6 +606,7 @@
 
             <Button
                 android:id="@+id/startAiSetupBtn"
+            android:elevation="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_button_gold"
@@ -514,6 +617,7 @@
                 android:textStyle="bold"
                 android:padding="14dp"
                 android:text="ابدأ اللعبة 🎱" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
