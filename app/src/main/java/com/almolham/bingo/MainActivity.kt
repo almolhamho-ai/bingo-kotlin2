@@ -2,6 +2,8 @@ package com.almolham.bingo
 
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +14,7 @@ import android.view.animation.OvershootInterpolator
 import android.widget.Button
 import android.widget.EditText
 import android.widget.GridLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -27,7 +30,10 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    // ---------- منطق اللعبة ----------
+    private enum class GameMode { NETWORK, AI }
+    private var gameMode = GameMode.NETWORK
+
+    // ---------- منطق الشبكة (لعب اونلاين بين جهازين) ----------
     private var gridNumbers = (1..25).toMutableList()
     private val marked = mutableSetOf<Int>()
     private var linesCompleted = 0
@@ -38,6 +44,36 @@ class MainActivity : AppCompatActivity() {
     private var serverSocket: ServerSocket? = null
     private var myTurn = false
 
+    // ---------- منطق اللعب ضد الذكاء الاصطناعي (متعدد الخصوم) ----------
+    private class GamePlayer(val name: String, val isAI: Boolean, val grid: MutableList<Int>) {
+        var lineCount = 0
+    }
+
+    private var players = mutableListOf<GamePlayer>()
+    private var currentIdx = 0
+    private val aiScratched = mutableSetOf<Int>()
+    private var lastWinWasByHuman = true
+
+    private var aiOpponentCount = 1
+    private var aiDifficulty = "medium" // easy / medium / hard / expert
+    private var aiSpeedIndex = 1 // 0 بطيء، 1 وسط، 2 سريع
+    private val speedFactors = floatArrayOf(1.7f, 1f, 0.5f)
+
+    private var pendingArrangement: MutableList<Int>? = null
+    private val arrangingTaps = mutableListOf<Int>()
+    private val aiNameInputs = mutableListOf<EditText>()
+    private lateinit var diffButtons: List<Button>
+    private lateinit var speedButtons: List<Button>
+
+    private val allLinesIdx: List<List<Int>> by lazy {
+        val lines = mutableListOf<List<Int>>()
+        for (r in 0 until 5) lines.add((0 until 5).map { c -> r * 5 + c })
+        for (c in 0 until 5) lines.add((0 until 5).map { r -> r * 5 + c })
+        lines.add((0 until 5).map { it * 5 + it })
+        lines.add((0 until 5).map { it * 5 + (4 - it) })
+        lines
+    }
+
     // ---------- الشاشات ----------
     private lateinit var screenLoading: View
     private lateinit var screenWelcome: View
@@ -45,6 +81,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenNetwork: View
     private lateinit var screenGame: View
     private lateinit var screenWin: View
+    private lateinit var screenAiSetup: View
+    private lateinit var screenArrange: View
     private var currentScreen: View? = null
 
     private lateinit var statusText: TextView
@@ -55,7 +93,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nameInput: EditText
     private lateinit var themeContainer: GridLayout
     private lateinit var winTitleText: TextView
-    private lateinit var winBadge: View
+    private lateinit var winSubtitleText: TextView
+    private lateinit var winBadge: TextView
+
+    private lateinit var aiCountText: TextView
+    private lateinit var aiNamesContainer: LinearLayout
+    private lateinit var arrangeStatusText: TextView
+    private lateinit var arrangeGrid: GridLayout
 
     private lateinit var prefs: android.content.SharedPreferences
 
@@ -89,6 +133,8 @@ class MainActivity : AppCompatActivity() {
         screenNetwork = findViewById(R.id.screenNetwork)
         screenGame = findViewById(R.id.screenGame)
         screenWin = findViewById(R.id.screenWin)
+        screenAiSetup = findViewById(R.id.screenAiSetup)
+        screenArrange = findViewById(R.id.screenArrange)
 
         statusText = findViewById(R.id.statusText)
         networkStatusText = findViewById(R.id.networkStatusText)
@@ -98,7 +144,13 @@ class MainActivity : AppCompatActivity() {
         nameInput = findViewById(R.id.nameInput)
         themeContainer = findViewById(R.id.themeContainer)
         winTitleText = findViewById(R.id.winTitleText)
+        winSubtitleText = findViewById(R.id.winSubtitleText)
         winBadge = findViewById(R.id.winBadge)
+
+        aiCountText = findViewById(R.id.aiCountText)
+        aiNamesContainer = findViewById(R.id.aiNamesContainer)
+        arrangeStatusText = findViewById(R.id.arrangeStatusText)
+        arrangeGrid = findViewById(R.id.arrangeGrid)
 
         ipInput.setText(prefs.getString("last_ip", ""))
         currentThemeIndex = prefs.getInt("theme_index", 0)
@@ -107,6 +159,8 @@ class MainActivity : AppCompatActivity() {
         setupWelcomeScreen()
         setupSettingsScreen()
         setupNetworkScreen()
+        setupAiSetupScreen()
+        setupArrangeScreen()
         setupBackNavigation()
 
         val headlineTypeface = Typeface.create("sans-serif-black", Typeface.BOLD)
@@ -125,6 +179,8 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 when (currentScreen) {
                     screenSettings -> showOnly(screenWelcome)
+                    screenAiSetup -> showOnly(screenWelcome)
+                    screenArrange -> showOnly(screenAiSetup)
                     screenNetwork -> {
                         closeConnection()
                         showOnly(screenWelcome)
@@ -152,9 +208,10 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // إغلاق الاتصال بشكل نظيف (بدون تسريب سوكيت)
+    // إغلاق الاتصال بشكل نظيف (بدون تسريب سوكيت) وإيقاف أي لعبة جارية
     private fun closeConnection() {
         gameStarted = false
+        gameMode = GameMode.NETWORK
         Thread {
             try { writer?.close() } catch (e: Exception) { }
             try { activeSocket?.close() } catch (e: Exception) { }
@@ -167,12 +224,15 @@ class MainActivity : AppCompatActivity() {
 
     // إظهار شاشة وحدة بس وإخفاء الباقي
     private fun showOnly(screen: View) {
-        listOf(screenLoading, screenWelcome, screenSettings, screenNetwork, screenGame, screenWin).forEach {
+        listOf(
+            screenLoading, screenWelcome, screenSettings, screenNetwork,
+            screenGame, screenWin, screenAiSetup, screenArrange
+        ).forEach {
             it.visibility = if (it == screen) View.VISIBLE else View.GONE
         }
         currentScreen = screen
         if (screen == screenWin) {
-            playWinCelebration()
+            if (lastWinWasByHuman) playWinCelebration() else playLoseTransition()
         }
     }
 
@@ -199,9 +259,12 @@ class MainActivity : AppCompatActivity() {
         val startTapBtn = findViewById<Button>(R.id.startTapBtn)
         addPressAnimation(startTapBtn)
 
+        val screenW = resources.displayMetrics.widthPixels.toFloat()
+        val screenH = resources.displayMetrics.heightPixels.toFloat()
+
         val letters = listOf(letterB, letterI, letterN, letterG, letterO)
-        val fromX = floatArrayOf(-600f, 0f, 0f, 0f, 600f)
-        val fromY = floatArrayOf(0f, -600f, -600f, 600f, 0f)
+        val fromX = floatArrayOf(-screenW, 0f, 0f, 0f, screenW)
+        val fromY = floatArrayOf(0f, -screenH, -screenH, screenH, 0f)
         val fromRotation = floatArrayOf(-140f, 140f, -140f, 140f, -140f)
         val delays = longArrayOf(50, 180, 310, 440, 570)
 
@@ -254,7 +317,11 @@ class MainActivity : AppCompatActivity() {
         cardNetwork.setOnClickListener {
             showOnly(screenNetwork)
         }
-        val comingSoonIds = listOf(R.id.cardAI, R.id.cardFriends, R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
+        val cardAI = findViewById<Button>(R.id.cardAI)
+        addPressAnimation(cardAI)
+        cardAI.setOnClickListener { openAiSetup() }
+
+        val comingSoonIds = listOf(R.id.cardFriends, R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
         comingSoonIds.forEach { id ->
             val btn = findViewById<Button>(id)
             addPressAnimation(btn)
@@ -331,7 +398,7 @@ class MainActivity : AppCompatActivity() {
         val gradient = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(startColor, endColor))
         gradient.cornerRadius = 200f
 
-        val buttonIds = listOf(R.id.startTapBtn, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn, R.id.playAgainBtn)
+        val buttonIds = listOf(R.id.startTapBtn, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn, R.id.playAgainBtn, R.id.startAiSetupBtn)
         buttonIds.forEach { id ->
             findViewById<Button>(id)?.background = gradient.constantState?.newDrawable()
         }
@@ -368,6 +435,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startHost() {
+        gameMode = GameMode.NETWORK
         val ip = getLocalIpAddress()
         networkStatusText.text = "بانتظار الاتصال... عنوانك: $ip"
 
@@ -401,6 +469,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startJoin() {
+        gameMode = GameMode.NETWORK
         val ip = ipInput.text.toString().trim()
         if (ip.isEmpty()) {
             networkStatusText.text = "اكتب عنوان IP المضيف أولاً"
@@ -455,7 +524,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- شاشة 5: اللعب ----------
+    // ---------- شاشة 5: اللعب الشبكي ----------
     private fun buildGrid() {
         grid.removeAllViews()
         for (i in 0 until 25) {
@@ -486,7 +555,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onCellTapped(number: Int) {
         if (!gameStarted || !myTurn || marked.contains(number)) return
-        sendMessage("TAP:$number")
+        if (gameMode == GameMode.NETWORK) sendMessage("TAP:$number")
         applyTap(number, fromRemote = false)
     }
 
@@ -527,7 +596,11 @@ class MainActivity : AppCompatActivity() {
             // fromRemote = false يعني أنا يلي ضغطت → أنا الفائز
             // fromRemote = true يعني الرسالة إجت من الطرف الآخر → هو الفائز، أنا خسرت
             val iWon = !fromRemote
+            lastWinWasByHuman = iWon
+            winBadge.text = if (iWon) "🏆" else "😔"
             winTitleText.text = if (iWon) "!BINGO — فزت 🏆" else "خسرت — فاز الطرف الآخر"
+            winSubtitleText.text = ""
+            playOutcomeSound(iWon)
             showOnly(screenWin)
             return
         }
@@ -537,7 +610,395 @@ class MainActivity : AppCompatActivity() {
                            else "دور الطرف الآخر (خطوط: $linesCompleted)"
     }
 
-    // ---------- شاشة 6: احتفال الفوز ----------
+    private fun countCompletedLines(): Int {
+        var count = 0
+        for (r in 0 until 5) {
+            var full = true
+            for (c in 0 until 5) {
+                if (!marked.contains(gridNumbers[r * 5 + c])) { full = false; break }
+            }
+            if (full) count++
+        }
+        for (c in 0 until 5) {
+            var full = true
+            for (r in 0 until 5) {
+                if (!marked.contains(gridNumbers[r * 5 + c])) { full = false; break }
+            }
+            if (full) count++
+        }
+        var d1 = true
+        for (i in 0 until 5) if (!marked.contains(gridNumbers[i * 5 + i])) { d1 = false; break }
+        if (d1) count++
+        var d2 = true
+        for (i in 0 until 5) if (!marked.contains(gridNumbers[i * 5 + (4 - i)])) { d2 = false; break }
+        if (d2) count++
+        return count
+    }
+
+    // ================================================================
+    // ========== شاشة 7: إعدادات اللعب ضد الذكاء الاصطناعي ==========
+    // ================================================================
+    private fun setupAiSetupScreen() {
+        val backBtn = findViewById<Button>(R.id.backFromAiSetupBtn)
+        val minusBtn = findViewById<Button>(R.id.aiCountMinusBtn)
+        val plusBtn = findViewById<Button>(R.id.aiCountPlusBtn)
+        val arrangeManualBtn = findViewById<Button>(R.id.arrangeManualBtn)
+        val arrangeRandomBtn = findViewById<Button>(R.id.arrangeRandomBtn)
+        val startBtn = findViewById<Button>(R.id.startAiSetupBtn)
+
+        diffButtons = listOf(
+            findViewById(R.id.diffEasyBtn), findViewById(R.id.diffMediumBtn),
+            findViewById(R.id.diffHardBtn), findViewById(R.id.diffExpertBtn)
+        )
+        speedButtons = listOf(
+            findViewById(R.id.speedSlowBtn), findViewById(R.id.speedMediumBtn), findViewById(R.id.speedFastBtn)
+        )
+
+        listOf(backBtn, minusBtn, plusBtn, arrangeManualBtn, arrangeRandomBtn, startBtn).forEach { addPressAnimation(it) }
+        (diffButtons + speedButtons).forEach { addPressAnimation(it) }
+
+        backBtn.setOnClickListener { showOnly(screenWelcome) }
+
+        minusBtn.setOnClickListener {
+            if (aiOpponentCount > 1) { aiOpponentCount--; updateAiCountUI() }
+        }
+        plusBtn.setOnClickListener {
+            if (aiOpponentCount < 5) { aiOpponentCount++; updateAiCountUI() }
+        }
+
+        val difficulties = listOf("easy", "medium", "hard", "expert")
+        diffButtons.forEachIndexed { i, btn ->
+            btn.setOnClickListener {
+                aiDifficulty = difficulties[i]
+                highlightGroup(diffButtons, i)
+            }
+        }
+        speedButtons.forEachIndexed { i, btn ->
+            btn.setOnClickListener {
+                aiSpeedIndex = i
+                highlightGroup(speedButtons, i)
+            }
+        }
+
+        arrangeManualBtn.setOnClickListener {
+            arrangingTaps.clear()
+            buildArrangeGrid()
+            showOnly(screenArrange)
+        }
+        arrangeRandomBtn.setOnClickListener {
+            pendingArrangement = (1..25).shuffled().toMutableList()
+            arrangeStatusText.text = "✅ ترتيب عشوائي جاهز (اضغط الزر تاني لإعادة الترتيب)"
+        }
+
+        startBtn.setOnClickListener {
+            val arrangement = pendingArrangement
+            if (arrangement == null) {
+                Toast.makeText(this, "لازم ترتب شبكتك أولاً (يدوي أو عشوائي)", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            startAiGame(arrangement)
+        }
+    }
+
+    private fun highlightGroup(buttons: List<Button>, selectedIndex: Int) {
+        buttons.forEachIndexed { i, b ->
+            if (i == selectedIndex) {
+                b.setBackgroundResource(R.drawable.bg_button_gold)
+                b.setTextColor(getColor(R.color.dark_text_on_gold))
+            } else {
+                b.setBackgroundResource(R.drawable.bg_input)
+                b.setTextColor(getColor(R.color.text_main))
+            }
+        }
+    }
+
+    private fun updateAiCountUI() {
+        aiCountText.text = aiOpponentCount.toString()
+        rebuildAiNameInputs()
+    }
+
+    private fun rebuildAiNameInputs() {
+        aiNamesContainer.removeAllViews()
+        aiNameInputs.clear()
+        for (i in 1..aiOpponentCount) {
+            val e = EditText(this)
+            e.hint = "اسم الخصم $i (اختياري)"
+            e.setHintTextColor(getColor(R.color.muted))
+            e.setTextColor(getColor(R.color.text_main))
+            e.setBackgroundResource(R.drawable.bg_input)
+            e.setPadding(24, 20, 24, 20)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 8)
+            e.layoutParams = lp
+            aiNamesContainer.addView(e)
+            aiNameInputs.add(e)
+        }
+    }
+
+    private fun openAiSetup() {
+        aiOpponentCount = 1
+        aiDifficulty = "medium"
+        aiSpeedIndex = 1
+        pendingArrangement = null
+        arrangingTaps.clear()
+        updateAiCountUI()
+        highlightGroup(diffButtons, 1)
+        highlightGroup(speedButtons, 1)
+        arrangeStatusText.text = "⚠️ لسا لازم ترتب شبكتك (يدوي أو عشوائي)"
+        showOnly(screenAiSetup)
+    }
+
+    // ================================================================
+    // ========== شاشة 8: ترتيب الشبكة يدوياً ==========
+    // ================================================================
+    private fun setupArrangeScreen() {
+        val backBtn = findViewById<Button>(R.id.backFromArrangeBtn)
+        addPressAnimation(backBtn)
+        backBtn.setOnClickListener { showOnly(screenAiSetup) }
+    }
+
+    private fun buildArrangeGrid() {
+        arrangeGrid.removeAllViews()
+        for (i in 1..25) {
+            val btn = Button(this)
+            btn.text = i.toString()
+            btn.textSize = 14f
+            val params = GridLayout.LayoutParams()
+            params.width = 0
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT
+            params.columnSpec = GridLayout.spec((i - 1) % 5, 1f)
+            params.rowSpec = GridLayout.spec((i - 1) / 5)
+            params.setMargins(4, 4, 4, 4)
+            btn.layoutParams = params
+            btn.setBackgroundResource(R.drawable.bg_cell)
+            btn.setTextColor(getColor(R.color.text_main))
+            addPressAnimation(btn)
+            btn.setOnClickListener {
+                if (arrangingTaps.contains(i)) return@setOnClickListener
+                arrangingTaps.add(i)
+                btn.isEnabled = false
+                btn.setBackgroundResource(R.drawable.bg_cell_marked)
+                btn.setTextColor(getColor(R.color.marked_text))
+                if (arrangingTaps.size == 25) {
+                    pendingArrangement = arrangingTaps.toMutableList()
+                    arrangeStatusText.text = "✅ ترتيب يدوي جاهز"
+                    showOnly(screenAiSetup)
+                }
+            }
+            arrangeGrid.addView(btn)
+        }
+    }
+
+    // ================================================================
+    // ========== محرك اللعب ضد الذكاء الاصطناعي (لعبة فعلية) ==========
+    // ================================================================
+    private fun startAiGame(arrangement: MutableList<Int>) {
+        gameMode = GameMode.AI
+        aiScratched.clear()
+        players = mutableListOf()
+
+        val humanName = prefs.getString("player_name", "لاعب") ?: "لاعب"
+        players.add(GamePlayer(humanName, false, arrangement))
+
+        for (i in 0 until aiOpponentCount) {
+            val typed = aiNameInputs.getOrNull(i)?.text?.toString()?.trim()
+            val nm = if (typed.isNullOrEmpty()) "الذكاء الاصطناعي ${i + 1}" else typed
+            players.add(GamePlayer(nm, true, (1..25).shuffled().toMutableList()))
+        }
+
+        currentIdx = 0 // أنا يلي بلعب أول دايماً
+        gameStarted = true
+        buildAiGrid()
+        updateAiStatusText()
+        showOnly(screenGame)
+    }
+
+    private fun buildAiGrid() {
+        grid.removeAllViews()
+        val human = players[0]
+        for (i in 0 until 25) {
+            val number = human.grid[i]
+            val btn = Button(this)
+            btn.text = number.toString()
+            btn.textSize = 16f
+            val params = GridLayout.LayoutParams()
+            params.width = 0
+            params.height = GridLayout.LayoutParams.WRAP_CONTENT
+            params.columnSpec = GridLayout.spec(i % 5, 1f)
+            params.rowSpec = GridLayout.spec(i / 5)
+            params.setMargins(4, 4, 4, 4)
+            btn.layoutParams = params
+            if (aiScratched.contains(number)) {
+                btn.isEnabled = false
+                btn.setBackgroundResource(R.drawable.bg_cell_marked)
+                btn.setTextColor(getColor(R.color.marked_text))
+            } else {
+                btn.setBackgroundResource(R.drawable.bg_cell)
+                btn.setTextColor(getColor(R.color.text_main))
+            }
+            addPressAnimation(btn)
+            btn.setOnClickListener { onAiCellTapped(number) }
+            grid.addView(btn)
+        }
+    }
+
+    private fun onAiCellTapped(number: Int) {
+        if (!gameStarted || gameMode != GameMode.AI) return
+        if (currentIdx != 0) return // مش دورك
+        if (aiScratched.contains(number)) return
+        applyCall(number)
+    }
+
+    private fun applyCall(number: Int) {
+        if (aiScratched.contains(number)) return
+        aiScratched.add(number)
+
+        for (i in 0 until grid.childCount) {
+            val child = grid.getChildAt(i) as Button
+            if (child.text.toString() == number.toString()) {
+                child.isEnabled = false
+                child.setBackgroundResource(R.drawable.bg_cell_marked)
+                child.setTextColor(getColor(R.color.marked_text))
+                child.animate().scaleX(1.15f).scaleY(1.15f).setDuration(120)
+                    .withEndAction { child.animate().scaleX(1f).scaleY(1f).setDuration(120).start() }
+                    .start()
+            }
+        }
+
+        var winnerIdx = -1
+        for ((idx, p) in players.withIndex()) {
+            val lines = countLines(p.grid, aiScratched)
+            if (lines > p.lineCount) p.lineCount = lines
+            if (p.lineCount >= 5 && winnerIdx == -1) winnerIdx = idx
+        }
+
+        if (winnerIdx != -1) {
+            finishAiGame(winnerIdx)
+            return
+        }
+
+        nextAiTurn()
+    }
+
+    private fun nextAiTurn() {
+        currentIdx = (currentIdx + 1) % players.size
+        updateAiStatusText()
+        val p = players[currentIdx]
+        if (p.isAI) {
+            val delayMs = (900 * speedFactors[aiSpeedIndex]).toLong()
+            backHandler.postDelayed({
+                if (!gameStarted || gameMode != GameMode.AI) return@postDelayed
+                val avail = p.grid.filter { !aiScratched.contains(it) }
+                if (avail.isEmpty()) { nextAiTurn(); return@postDelayed }
+                val choice = pickAiNumberFor(p, avail)
+                applyCall(choice)
+            }, delayMs)
+        }
+    }
+
+    private fun updateAiStatusText() {
+        val p = players[currentIdx]
+        statusText.text = if (!p.isAI) "دورك — اضغط أي رقم من شبكتك" else "دور ${p.name}..."
+    }
+
+    // يفضّل رقم يكمّل خط، غير هيك بيعتمد على مستوى الصعوبة المختار
+    private fun pickAiNumberFor(p: GamePlayer, avail: List<Int>): Int {
+        return when (aiDifficulty) {
+            "easy" -> avail.random()
+            "medium" -> aiMediumPick(p, avail)
+            else -> aiExpertPick(p, avail) // صعب وخبير كلاهما يستخدما نفس المنطق الأذكى
+        }
+    }
+
+    private fun aiMediumPick(p: GamePlayer, avail: List<Int>): Int {
+        var best = avail.first()
+        var bestScore = -1
+        for (n in avail) {
+            val i = p.grid.indexOf(n)
+            var score = 0
+            for (line in allLinesIdx) {
+                if (i in line) {
+                    val filled = line.count { aiScratched.contains(p.grid[it]) }
+                    if (filled > score) score = filled
+                }
+            }
+            if (score > bestScore || (score == bestScore && Random.nextFloat() < 0.4f)) {
+                bestScore = score
+                best = n
+            }
+        }
+        return best
+    }
+
+    private fun aiExpertPick(p: GamePlayer, avail: List<Int>): Int {
+        var best = avail.first()
+        var bestScore = -1
+        for (n in avail) {
+            val i = p.grid.indexOf(n)
+            var score = 0
+            for (line in allLinesIdx) {
+                if (i !in line) continue
+                val remaining = line.count { !aiScratched.contains(p.grid[it]) }
+                score += if (remaining <= 1) 1000 else (5 - remaining) * 25
+            }
+            if (score > bestScore) { bestScore = score; best = n }
+        }
+        return best
+    }
+
+    private fun finishAiGame(winnerIdx: Int) {
+        gameStarted = false
+        val winner = players[winnerIdx]
+        val humanWon = winnerIdx == 0
+        lastWinWasByHuman = humanWon
+        val losers = players.filterIndexed { idx, _ -> idx != winnerIdx }.map { it.name }
+
+        winBadge.text = if (humanWon) "🏆" else "😔"
+        winTitleText.text = if (humanWon) "!BINGO — فزت 🏆" else "فاز ${winner.name} 🏆"
+        winSubtitleText.text = if (losers.isNotEmpty()) "خسر: ${losers.joinToString("، ")}" else ""
+
+        playOutcomeSound(humanWon)
+        showOnly(screenWin)
+    }
+
+    private fun countLines(gridArr: List<Int>, scratched: Set<Int>): Int {
+        var count = 0
+        for (r in 0 until 5) {
+            var full = true
+            for (c in 0 until 5) { if (!scratched.contains(gridArr[r * 5 + c])) { full = false; break } }
+            if (full) count++
+        }
+        for (c in 0 until 5) {
+            var full = true
+            for (r in 0 until 5) { if (!scratched.contains(gridArr[r * 5 + c])) { full = false; break } }
+            if (full) count++
+        }
+        var d1 = true
+        for (i in 0 until 5) if (!scratched.contains(gridArr[i * 5 + i])) { d1 = false; break }
+        if (d1) count++
+        var d2 = true
+        for (i in 0 until 5) if (!scratched.contains(gridArr[i * 5 + (4 - i)])) { d2 = false; break }
+        if (d2) count++
+        return count
+    }
+
+    // ---------- شاشة 6: الفوز/الخسارة ----------
+    private fun playOutcomeSound(won: Boolean) {
+        try {
+            val tg = ToneGenerator(AudioManager.STREAM_MUSIC, 90)
+            if (won) {
+                tg.startTone(ToneGenerator.TONE_PROP_ACK, 150)
+                backHandler.postDelayed({ tg.startTone(ToneGenerator.TONE_PROP_BEEP2, 150) }, 160)
+                backHandler.postDelayed({ tg.startTone(ToneGenerator.TONE_PROP_ACK, 300) }, 320)
+                backHandler.postDelayed({ tg.release() }, 650)
+            } else {
+                tg.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400)
+                backHandler.postDelayed({ tg.release() }, 450)
+            }
+        } catch (e: Exception) { }
+    }
+
+    // احتفال كامل (شارة + كونفيتي) — يظهر فقط إذا أنا الفائز
     private fun playWinCelebration() {
         winBadge.scaleX = 0f
         winBadge.scaleY = 0f
@@ -552,6 +1013,9 @@ class MainActivity : AppCompatActivity() {
             .setStartDelay(200)
             .setDuration(400)
             .start()
+
+        winSubtitleText.alpha = 0f
+        winSubtitleText.animate().alpha(1f).setStartDelay(300).setDuration(400).start()
 
         val container = screenWin as? ViewGroup ?: return
         val emojis = listOf("🎉", "✨", "⭐", "🎊", "🥳")
@@ -589,29 +1053,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun countCompletedLines(): Int {
-        var count = 0
-        for (r in 0 until 5) {
-            var full = true
-            for (c in 0 until 5) {
-                if (!marked.contains(gridNumbers[r * 5 + c])) { full = false; break }
-            }
-            if (full) count++
-        }
-        for (c in 0 until 5) {
-            var full = true
-            for (r in 0 until 5) {
-                if (!marked.contains(gridNumbers[r * 5 + c])) { full = false; break }
-            }
-            if (full) count++
-        }
-        var d1 = true
-        for (i in 0 until 5) if (!marked.contains(gridNumbers[i * 5 + i])) { d1 = false; break }
-        if (d1) count++
-        var d2 = true
-        for (i in 0 until 5) if (!marked.contains(gridNumbers[i * 5 + (4 - i)])) { d2 = false; break }
-        if (d2) count++
-        return count
+    // انتقال بسيط بدون احتفال — لما ما أكون أنا الفائز
+    private fun playLoseTransition() {
+        winBadge.alpha = 0f
+        winBadge.animate().alpha(1f).setDuration(400).start()
+        winTitleText.alpha = 0f
+        winTitleText.animate().alpha(1f).setDuration(400).start()
+        winSubtitleText.alpha = 0f
+        winSubtitleText.animate().alpha(1f).setStartDelay(150).setDuration(400).start()
     }
 
     private fun getLocalIpAddress(): String {
