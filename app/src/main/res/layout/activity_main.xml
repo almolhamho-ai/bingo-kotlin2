@@ -520,73 +520,12 @@
                 <Button android:id="@+id/diffExpertBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_choice" android:textColor="@color/text_main" android:textSize="12sp" android:text="خبير" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/muted"
-                android:layout_marginBottom="6dp"
-                android:text="سرعة الذكاء الاصطناعي" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="14dp">
-
-                <Button android:id="@+id/speedSlowBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_choice" android:textColor="@color/text_main" android:textSize="12sp" android:text="🐢 بطيء" />
-                <Button android:id="@+id/speedMediumBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_choice" android:textColor="@color/text_main" android:textSize="12sp" android:text="🚶 وسط" />
-                <Button android:id="@+id/speedFastBtn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_choice" android:textColor="@color/text_main" android:textSize="12sp" android:text="⚡ سريع" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/muted"
-                android:layout_marginBottom="6dp"
-                android:text="ترتيب شبكتك" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
-
-                <Button
-                    android:id="@+id/arrangeManualBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/bg_choice"
-                    android:textColor="@color/text_main"
-                    android:textSize="12sp"
-                    android:text="✋ ترتيب يدوي" />
-
-                <Button
-                    android:id="@+id/arrangeRandomBtn"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_choice"
-                    android:textColor="@color/text_main"
-                    android:textSize="12sp"
-                    android:text="🔀 ترتيب عشوائي" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/arrangeStatusText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/muted"
-                android:textSize="13sp"
-                android:layout_marginBottom="20dp"
-                android:text="⚠️ لسا لازم ترتب شبكتك (يدوي أو عشوائي)" />
-
             <Button
                 android:id="@+id/startAiSetupBtn"
-            android:elevation="8dp"
+                android:elevation="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_button_gold"
                 app:backgroundTint="@null"
                 android:insetTop="0dp"
@@ -700,7 +639,7 @@
                     android:textStyle="bold"
                     android:padding="12dp"
                     android:enabled="false"
-                    android:text="✅ تأكيد الترتيب" />
+                    android:text="ابدأ اللعبة 🎱" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
