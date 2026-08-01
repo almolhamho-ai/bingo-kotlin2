@@ -59,12 +59,10 @@ class MainActivity : AppCompatActivity() {
     private var aiSpeedIndex = 1 // 0 بطيء، 1 وسط، 2 سريع
     private val speedFactors = floatArrayOf(1.7f, 1f, 0.5f)
 
-    private var pendingArrangement: MutableList<Int>? = null
     private val arrangeSelected = mutableListOf<Int>()
     private val aiNameInputs = mutableListOf<EditText>()
     private lateinit var aiCountButtons: List<Button>
     private lateinit var diffButtons: List<Button>
-    private lateinit var speedButtons: List<Button>
 
     private val allLinesIdx: List<List<Int>> by lazy {
         val lines = mutableListOf<List<Int>>()
@@ -98,7 +96,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var winBadge: TextView
 
     private lateinit var aiNamesContainer: LinearLayout
-    private lateinit var arrangeStatusText: TextView
     private lateinit var numberPool: GridLayout
     private lateinit var arrangePreviewGrid: GridLayout
     private lateinit var arrRandomBtn: Button
@@ -178,7 +175,6 @@ class MainActivity : AppCompatActivity() {
         winBadge = findViewById(R.id.winBadge)
 
         aiNamesContainer = findViewById(R.id.aiNamesContainer)
-        arrangeStatusText = findViewById(R.id.arrangeStatusText)
         numberPool = findViewById(R.id.numberPool)
         arrangePreviewGrid = findViewById(R.id.arrangePreviewGrid)
         arrRandomBtn = findViewById(R.id.arrRandomBtn)
@@ -689,8 +685,6 @@ class MainActivity : AppCompatActivity() {
     // ================================================================
     private fun setupAiSetupScreen() {
         val backBtn = findViewById<Button>(R.id.backFromAiSetupBtn)
-        val arrangeManualBtn = findViewById<Button>(R.id.arrangeManualBtn)
-        val arrangeRandomBtn = findViewById<Button>(R.id.arrangeRandomBtn)
         val startBtn = findViewById<Button>(R.id.startAiSetupBtn)
 
         aiCountButtons = listOf(
@@ -701,12 +695,9 @@ class MainActivity : AppCompatActivity() {
             findViewById(R.id.diffEasyBtn), findViewById(R.id.diffMediumBtn),
             findViewById(R.id.diffHardBtn), findViewById(R.id.diffExpertBtn)
         )
-        speedButtons = listOf(
-            findViewById(R.id.speedSlowBtn), findViewById(R.id.speedMediumBtn), findViewById(R.id.speedFastBtn)
-        )
 
-        listOf(backBtn, arrangeManualBtn, arrangeRandomBtn, startBtn).forEach { addPressAnimation(it) }
-        (aiCountButtons + diffButtons + speedButtons).forEach { addPressAnimation(it) }
+        listOf(backBtn, startBtn).forEach { addPressAnimation(it) }
+        (aiCountButtons + diffButtons).forEach { addPressAnimation(it) }
 
         backBtn.setOnClickListener { showOnly(screenWelcome) }
 
@@ -725,14 +716,9 @@ class MainActivity : AppCompatActivity() {
                 highlightDifficulty(i)
             }
         }
-        speedButtons.forEachIndexed { i, btn ->
-            btn.setOnClickListener {
-                aiSpeedIndex = i
-                highlightUniform(speedButtons, i)
-            }
-        }
 
-        arrangeManualBtn.setOnClickListener {
+        // ضغط "ابدأ اللعبة" بيوديك مباشرة لشاشة ترتيب شبكتك (مسبح الأرقام + المعاينة الحية)
+        startBtn.setOnClickListener {
             arrangeSelected.clear()
             renderPool()
             renderPreviewGrid()
@@ -740,22 +726,9 @@ class MainActivity : AppCompatActivity() {
             updateConfirmBtnStyle()
             showOnly(screenArrange)
         }
-        arrangeRandomBtn.setOnClickListener {
-            pendingArrangement = (1..25).shuffled().toMutableList()
-            arrangeStatusText.text = "✅ ترتيب عشوائي جاهز (اضغط الزر تاني لإعادة الترتيب)"
-        }
-
-        startBtn.setOnClickListener {
-            val arrangement = pendingArrangement
-            if (arrangement == null) {
-                Toast.makeText(this, "لازم ترتب شبكتك أولاً (يدوي أو عشوائي)", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            startAiGame(arrangement)
-        }
     }
 
-    // تفعيل موحّد بلون ذهبي (يستخدم لعدد الخصوم والسرعة، تماماً متل choice-btn.selected بالأصل)
+    // تفعيل موحّد بلون ذهبي (يستخدم لعدد الخصوم، تماماً متل choice-btn.selected بالأصل)
     private fun highlightUniform(buttons: List<Button>, selectedIndex: Int) {
         buttons.forEachIndexed { i, b ->
             if (i == selectedIndex) {
@@ -810,14 +783,10 @@ class MainActivity : AppCompatActivity() {
     private fun openAiSetup() {
         aiOpponentCount = 1
         aiDifficulty = "medium"
-        aiSpeedIndex = 1
-        pendingArrangement = null
         arrangeSelected.clear()
         rebuildAiNameInputs()
         highlightUniform(aiCountButtons, 0)
         highlightDifficulty(1)
-        highlightUniform(speedButtons, 1)
-        arrangeStatusText.text = "⚠️ لسا لازم ترتب شبكتك (يدوي أو عشوائي)"
         showOnly(screenAiSetup)
     }
 
@@ -843,9 +812,7 @@ class MainActivity : AppCompatActivity() {
 
         arrConfirmBtn.setOnClickListener {
             if (arrangeSelected.size < 25) return@setOnClickListener
-            pendingArrangement = arrangeSelected.toMutableList()
-            arrangeStatusText.text = "✅ ترتيب يدوي جاهز"
-            showOnly(screenAiSetup)
+            startAiGame(arrangeSelected.toMutableList())
         }
     }
 
