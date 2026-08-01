@@ -30,7 +30,7 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private enum class GameMode { NETWORK, AI }
+    private enum class GameMode { NETWORK, AI, FRIENDS }
     private var gameMode = GameMode.NETWORK
 
     // ---------- منطق الشبكة (لعب اونلاين بين جهازين) ----------
@@ -64,6 +64,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var aiCountButtons: List<Button>
     private lateinit var diffButtons: List<Button>
 
+    // ---------- منطق اللعب المحلي بين أصدقاء (تمرير الجهاز) ----------
+    private var friendsCount = 2
+    private lateinit var friendsCountButtons: List<Button>
+    private val friendsNameInputs = mutableListOf<EditText>()
+    private var arrangingIdx = 0
+    private var passDeviceReady: (() -> Unit)? = null
+
     private val allLinesIdx: List<List<Int>> by lazy {
         val lines = mutableListOf<List<Int>>()
         for (r in 0 until 5) lines.add((0 until 5).map { c -> r * 5 + c })
@@ -82,6 +89,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenWin: View
     private lateinit var screenAiSetup: View
     private lateinit var screenArrange: View
+    private lateinit var screenFriendsSetup: View
+    private lateinit var screenPassDevice: View
     private var currentScreen: View? = null
 
     private lateinit var statusText: TextView
@@ -162,6 +171,8 @@ class MainActivity : AppCompatActivity() {
         screenWin = findViewById(R.id.screenWin)
         screenAiSetup = findViewById(R.id.screenAiSetup)
         screenArrange = findViewById(R.id.screenArrange)
+        screenFriendsSetup = findViewById(R.id.screenFriendsSetup)
+        screenPassDevice = findViewById(R.id.screenPassDevice)
 
         statusText = findViewById(R.id.statusText)
         networkStatusText = findViewById(R.id.networkStatusText)
@@ -189,6 +200,8 @@ class MainActivity : AppCompatActivity() {
         setupNetworkScreen()
         setupAiSetupScreen()
         setupArrangeScreen()
+        setupFriendsSetupScreen()
+        setupPassDeviceScreen()
         setupBackNavigation()
 
         val headlineTypeface = Typeface.create("sans-serif-black", Typeface.BOLD)
@@ -208,7 +221,14 @@ class MainActivity : AppCompatActivity() {
                 when (currentScreen) {
                     screenSettings -> showOnly(screenWelcome)
                     screenAiSetup -> showOnly(screenWelcome)
-                    screenArrange -> showOnly(screenAiSetup)
+                    screenFriendsSetup -> showOnly(screenWelcome)
+                    screenArrange -> {
+                        if (gameMode == GameMode.FRIENDS) showOnly(screenFriendsSetup) else showOnly(screenAiSetup)
+                    }
+                    screenPassDevice -> {
+                        closeConnection()
+                        showOnly(screenWelcome)
+                    }
                     screenNetwork -> {
                         closeConnection()
                         showOnly(screenWelcome)
@@ -254,7 +274,8 @@ class MainActivity : AppCompatActivity() {
     private fun showOnly(screen: View) {
         listOf(
             screenLoading, screenWelcome, screenSettings, screenNetwork,
-            screenGame, screenWin, screenAiSetup, screenArrange
+            screenGame, screenWin, screenAiSetup, screenArrange,
+            screenFriendsSetup, screenPassDevice
         ).forEach {
             it.visibility = if (it == screen) View.VISIBLE else View.GONE
         }
@@ -359,7 +380,11 @@ class MainActivity : AppCompatActivity() {
         addPressAnimation(cardAI)
         cardAI.setOnClickListener { openAiSetup() }
 
-        val comingSoonIds = listOf(R.id.cardFriends, R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
+        val cardFriends = findViewById<View>(R.id.cardFriends)
+        addPressAnimation(cardFriends)
+        cardFriends.setOnClickListener { openFriendsSetup() }
+
+        val comingSoonIds = listOf(R.id.cardLevels, R.id.cardDaily, R.id.cardTournament)
         comingSoonIds.forEach { id ->
             val btn = findViewById<View>(id)
             addPressAnimation(btn)
@@ -436,7 +461,7 @@ class MainActivity : AppCompatActivity() {
         val gradient = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(startColor, endColor))
         gradient.cornerRadius = 200f
 
-        val buttonIds = listOf(R.id.startTapBtn, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn, R.id.playAgainBtn, R.id.startAiSetupBtn)
+        val buttonIds = listOf(R.id.startTapBtn, R.id.saveSettingsBtn, R.id.hostBtn, R.id.joinBtn, R.id.playAgainBtn, R.id.startAiSetupBtn, R.id.startFriendsSetupBtn, R.id.passDeviceReadyBtn)
         buttonIds.forEach { id ->
             findViewById<Button>(id)?.background = gradient.constantState?.newDrawable()
         }
@@ -719,11 +744,13 @@ class MainActivity : AppCompatActivity() {
 
         // ضغط "ابدأ اللعبة" بيوديك مباشرة لشاشة ترتيب شبكتك (مسبح الأرقام + المعاينة الحية)
         startBtn.setOnClickListener {
+            gameMode = GameMode.AI
             arrangeSelected.clear()
             renderPool()
             renderPreviewGrid()
             arrConfirmBtn.isEnabled = false
             updateConfirmBtnStyle()
+            findViewById<TextView>(R.id.arrangeTitleText).text = "رتّب شبكتك"
             showOnly(screenArrange)
         }
     }
@@ -791,6 +818,116 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ================================================================
+    // ========== شاشة: إعدادات اللعب المحلي بين أصدقاء (تمرير الجهاز) ==========
+    // ================================================================
+    private fun setupFriendsSetupScreen() {
+        val backBtn = findViewById<Button>(R.id.backFromFriendsSetupBtn)
+        val startBtn = findViewById<Button>(R.id.startFriendsSetupBtn)
+        friendsCountButtons = listOf(
+            findViewById(R.id.friendsCount2Btn), findViewById(R.id.friendsCount3Btn),
+            findViewById(R.id.friendsCount4Btn), findViewById(R.id.friendsCount5Btn)
+        )
+
+        listOf(backBtn, startBtn).forEach { addPressAnimation(it) }
+        friendsCountButtons.forEach { addPressAnimation(it) }
+
+        backBtn.setOnClickListener { showOnly(screenWelcome) }
+
+        friendsCountButtons.forEachIndexed { i, btn ->
+            btn.setOnClickListener {
+                friendsCount = i + 2
+                highlightUniform(friendsCountButtons, i)
+                rebuildFriendsNameInputs()
+            }
+        }
+
+        startBtn.setOnClickListener {
+            players = mutableListOf()
+            val defaultName = prefs.getString("player_name", "لاعب") ?: "لاعب"
+            for (i in 0 until friendsCount) {
+                val typed = friendsNameInputs.getOrNull(i)?.text?.toString()?.trim()
+                val fallback = if (i == 0) defaultName else "لاعب ${i + 1}"
+                val nm = if (typed.isNullOrEmpty()) fallback else typed
+                players.add(GamePlayer(nm, false, (1..25).toMutableList()))
+            }
+            arrangingIdx = 0
+            gameMode = GameMode.FRIENDS
+            startArrangingFlow()
+        }
+    }
+
+    private fun rebuildFriendsNameInputs() {
+        val container = findViewById<LinearLayout>(R.id.friendsNamesContainer)
+        container.removeAllViews()
+        friendsNameInputs.clear()
+        for (i in 1..friendsCount) {
+            val e = EditText(this)
+            e.hint = if (i == 1) "اسمك" else "اسم اللاعب $i"
+            e.setHintTextColor(getColor(R.color.muted))
+            e.setTextColor(getColor(R.color.text_main))
+            e.setBackgroundResource(R.drawable.bg_input)
+            e.setPadding(24, 20, 24, 20)
+            if (i == 1) e.setText(prefs.getString("player_name", "") ?: "")
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 8)
+            e.layoutParams = lp
+            container.addView(e)
+            friendsNameInputs.add(e)
+        }
+    }
+
+    private fun openFriendsSetup() {
+        friendsCount = 2
+        rebuildFriendsNameInputs()
+        highlightUniform(friendsCountButtons, 0)
+        showOnly(screenFriendsSetup)
+    }
+
+    // كل لاعب برتّب شبكته الخاصة بدوره، وبعدين تبلش اللعبة الفعلية
+    private fun startArrangingFlow() {
+        if (arrangingIdx >= players.size) {
+            startFriendsGame()
+            return
+        }
+        showPassDevice(players[arrangingIdx].name) {
+            arrangeSelected.clear()
+            renderPool()
+            renderPreviewGrid()
+            arrConfirmBtn.isEnabled = false
+            updateConfirmBtnStyle()
+            findViewById<TextView>(R.id.arrangeTitleText).text = "رتّب شبكتك يا ${players[arrangingIdx].name}"
+            showOnly(screenArrange)
+        }
+    }
+
+    private fun startFriendsGame() {
+        aiScratched.clear()
+        players.forEach { it.lineCount = 0 }
+        gameStarted = true
+        currentIdx = -1 // نظام nextAiTurn() بيزيدها لصفر بأول استدعاء
+        nextAiTurn()
+    }
+
+    // ================================================================
+    // ========== شاشة: تمرير الجهاز بين اللاعبين ==========
+    // ================================================================
+    private fun setupPassDeviceScreen() {
+        val readyBtn = findViewById<Button>(R.id.passDeviceReadyBtn)
+        addPressAnimation(readyBtn)
+        readyBtn.setOnClickListener {
+            val cb = passDeviceReady
+            passDeviceReady = null
+            cb?.invoke()
+        }
+    }
+
+    private fun showPassDevice(name: String, onReady: () -> Unit) {
+        passDeviceReady = onReady
+        findViewById<TextView>(R.id.passDeviceNameText).text = "مرر الجهاز إلى:\n$name"
+        showOnly(screenPassDevice)
+    }
+
+    // ================================================================
     // ========== شاشة 8: ترتيب الشبكة يدوياً (مسبح أرقام + معاينة حية) ==========
     // ================================================================
     private fun setupArrangeScreen() {
@@ -799,7 +936,9 @@ class MainActivity : AppCompatActivity() {
         addPressAnimation(arrRandomBtn)
         addPressAnimation(arrConfirmBtn)
 
-        backBtn.setOnClickListener { showOnly(screenAiSetup) }
+        backBtn.setOnClickListener {
+            if (gameMode == GameMode.FRIENDS) showOnly(screenFriendsSetup) else showOnly(screenAiSetup)
+        }
 
         arrRandomBtn.setOnClickListener {
             arrangeSelected.clear()
@@ -812,7 +951,15 @@ class MainActivity : AppCompatActivity() {
 
         arrConfirmBtn.setOnClickListener {
             if (arrangeSelected.size < 25) return@setOnClickListener
-            startAiGame(arrangeSelected.toMutableList())
+            if (gameMode == GameMode.FRIENDS) {
+                val p = players[arrangingIdx]
+                p.grid.clear()
+                p.grid.addAll(arrangeSelected)
+                arrangingIdx++
+                startArrangingFlow()
+            } else {
+                startAiGame(arrangeSelected.toMutableList())
+            }
         }
     }
 
@@ -923,16 +1070,20 @@ class MainActivity : AppCompatActivity() {
 
         currentIdx = 0 // أنا يلي بلعب أول دايماً
         gameStarted = true
-        buildAiGrid()
+        buildTurnGrid()
         updateAiStatusText()
         showOnly(screenGame)
     }
 
-    private fun buildAiGrid() {
+    // بوضع الذكاء الاصطناعي دايماً نعرض شبكة الإنسان (اللاعب صاحب الجهاز)
+    // بوضع الأصدقاء (تمرير الجهاز) نعرض شبكة صاحب الدور الحالي
+    private fun displayedPlayerIndex(): Int = if (gameMode == GameMode.FRIENDS) currentIdx else 0
+
+    private fun buildTurnGrid() {
         grid.removeAllViews()
-        val human = players[0]
+        val shown = players[displayedPlayerIndex()]
         for (i in 0 until 25) {
-            val number = human.grid[i]
+            val number = shown.grid[i]
             val btn = Button(this)
             btn.text = number.toString()
             btn.textSize = 16f
@@ -959,8 +1110,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onAiCellTapped(number: Int) {
-        if (!gameStarted || gameMode != GameMode.AI) return
-        if (currentIdx != 0) return // مش دورك
+        if (!gameStarted || (gameMode != GameMode.AI && gameMode != GameMode.FRIENDS)) return
+        if (currentIdx != displayedPlayerIndex()) return // مش دورك
         if (aiScratched.contains(number)) return
         applyCall(number)
     }
@@ -992,7 +1143,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (winnerIdx != -1) {
-            finishAiGame(winnerIdx)
+            finishMultiplayerGame(winnerIdx)
             return
         }
 
@@ -1001,9 +1152,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun nextAiTurn() {
         currentIdx = (currentIdx + 1) % players.size
-        updateAiStatusText()
         val p = players[currentIdx]
         if (p.isAI) {
+            updateAiStatusText()
             val delayMs = (900 * speedFactors[aiSpeedIndex]).toLong()
             backHandler.postDelayed({
                 if (!gameStarted || gameMode != GameMode.AI) return@postDelayed
@@ -1012,12 +1163,25 @@ class MainActivity : AppCompatActivity() {
                 val choice = pickAiNumberFor(p, avail)
                 applyCall(choice)
             }, delayMs)
+        } else if (gameMode == GameMode.FRIENDS) {
+            // بوضع الأصدقاء: نعرض شاشة "مرر الجهاز" قبل ما نكشف شبكة صاحب الدور الجاي
+            showPassDevice(p.name) {
+                buildTurnGrid()
+                updateAiStatusText()
+                showOnly(screenGame)
+            }
+        } else {
+            updateAiStatusText()
         }
     }
 
     private fun updateAiStatusText() {
         val p = players[currentIdx]
-        statusText.text = if (!p.isAI) "دورك — اضغط أي رقم من شبكتك" else "دور ${p.name}..."
+        statusText.text = when {
+            gameMode == GameMode.FRIENDS -> "دورك يا ${p.name} — اضغط أي رقم من شبكتك"
+            !p.isAI -> "دورك — اضغط أي رقم من شبكتك"
+            else -> "دور ${p.name}..."
+        }
     }
 
     // يفضّل رقم يكمّل خط، غير هيك بيعتمد على مستوى الصعوبة المختار
@@ -1065,21 +1229,25 @@ class MainActivity : AppCompatActivity() {
         return best
     }
 
-    private fun finishAiGame(winnerIdx: Int) {
+    private fun finishMultiplayerGame(winnerIdx: Int) {
         gameStarted = false
         val winner = players[winnerIdx]
-        val humanWon = winnerIdx == 0
-        lastWinWasByHuman = humanWon
+        val winnerIsHuman = !winner.isAI
+        lastWinWasByHuman = winnerIsHuman
         val losers = players.filterIndexed { idx, _ -> idx != winnerIdx }.map { it.name }
 
-        winBadge.text = if (humanWon) "🏆" else "😔"
-        winTitleText.text = if (humanWon) "!BINGO — فزت 🏆" else "فاز ${winner.name} 🏆"
+        winBadge.text = if (winnerIsHuman) "🏆" else "😔"
+        winTitleText.text = if (gameMode == GameMode.AI && winnerIdx == 0) {
+            "!BINGO — فزت 🏆"
+        } else {
+            "!BINGO — فاز ${winner.name} 🏆"
+        }
         applyGradientToSingle(winTitleText, intArrayOf(
             android.graphics.Color.parseColor("#F0B429"), android.graphics.Color.parseColor("#E67E22")
         ))
         winSubtitleText.text = if (losers.isNotEmpty()) "خسر: ${losers.joinToString("، ")}" else ""
 
-        playOutcomeSound(humanWon)
+        playOutcomeSound(winnerIsHuman)
         showOnly(screenWin)
     }
 
