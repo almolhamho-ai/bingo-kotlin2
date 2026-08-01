@@ -349,7 +349,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <span class="mc-icon">👥</span>
       <span class="mc-text"><b id="mc-friends-title">اللعب مع الأصدقاء</b><small id="mc-friends-sub">تمرير الهاتف بينكم</small></span>
     </button>
-    <button class="menu-card card-net" onclick="showScreen('s-connect')">
+    <button class="menu-card card-net" onclick="if(window.AndroidBridge){AndroidBridge.startNetworkPlay();}else{showScreen('s-connect');}">
       <span class="mc-icon">📶</span>
       <span class="mc-text"><b data-i18n="networkPlayTitle">اللعب الشبكي</b><small data-i18n="netCardSub2">عدة أجهزة عبر نقطة اتصال، بدون إنترنت</small></span>
     </button>
