@@ -20,11 +20,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
+    private class ClientConn(val id: Int, val socket: Socket, val writer: PrintWriter)
+
     // ============ جسر اتصال مباشر بعنوان IP (بديل WebRTC) ============
     // بيسمح لكود اللعبة (bingo-v18.html) يستضيف/ينضم عبر Socket حقيقي،
     // بنفس واجهة اللعب والاحتفال الأصلية بالضبط — بدون رموز أو QR.
     private inner class AndroidBridge {
-        private class ClientConn(val id: Int, val socket: Socket, val writer: PrintWriter)
 
         private var serverSocket: ServerSocket? = null
         private val hostClients = mutableListOf<ClientConn>()
