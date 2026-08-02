@@ -197,8 +197,17 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .score-title{font-size:.8rem;color:var(--muted);margin-bottom:8px;}
 .score-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);}
 .score-row:last-child{border-bottom:none;}
-.score-row.active-row{background:rgba(240,180,41,.05);border-radius:8px;padding:5px 6px;margin:0 -6px;}
+.score-row.active-row{background:var(--gold);border:2px solid var(--gold);border-radius:10px;padding:8px 12px;margin:3px -4px;box-shadow:0 0 16px rgba(240,180,41,.65);animation:activeRowPulse 1.6s ease-in-out infinite;}
+@keyframes activeRowPulse{0%,100%{box-shadow:0 0 8px rgba(240,180,41,.3);}50%{box-shadow:0 0 18px rgba(240,180,41,.6);}}
+.score-row.active-row .score-name{color:#1a1000;font-weight:900;font-size:1.05rem;}
 .score-name{font-size:.9rem;font-weight:700;}
+
+/* وضع التطبيق الأصلي (WebView): نخفي عناصر WebRTC/الرمز، ونظهر عناصر الاتصال المباشر بعنوان IP */
+.native-app .webrtc-only{display:none!important;}
+.host-native-only,.join-native-only{display:none;}
+.native-app .host-native-only{display:flex!important;}
+.native-app .join-native-only{display:flex!important;}
+.ip-display-box{background:var(--surface);border:2px solid var(--gold);border-radius:12px;padding:18px 24px;font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:1px;direction:ltr;text-align:center;width:100%;box-sizing:border-box;}
 .leader-crown{margin-inline-end:4px;filter:drop-shadow(0 0 3px rgba(240,180,41,.8));}
 .score-letters{display:flex;gap:4px;direction:ltr;}
 .sl{width:22px;height:22px;border-radius:5px;background:var(--surface);border:1px solid var(--border);
@@ -460,11 +469,19 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <button class="start-btn" id="host-add-btn" onclick="hostAddPlayer()" data-i18n="addPlayerBtn">➕ إضافة لاعب جديد</button>
   </div>
   <div id="host-qr-area" class="net-section" style="display:none">
-    <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="hostSimpleStep1">١. اضغط الزر وأرسل الرمز لصديقك (بلوتوث، واتساب، أي طريقة)</div>
-    <div id="host-code-block"></div>
-    <div class="setup-label" style="font-weight:900;font-size:1rem;margin-top:14px" data-i18n="hostSimpleStep2">٢. لما يرجعلك صديقك رمزه، الصقه هون واضغط ربط</div>
-    <textarea class="code-textarea" id="host-answer-paste" rows="3"></textarea>
-    <button class="start-btn" onclick="hostPasteAnswer()" data-i18n="connectCodeBtn">ربط عبر الرمز</button>
+    <div class="webrtc-only">
+      <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="hostSimpleStep1">١. اضغط الزر وأرسل الرمز لصديقك (بلوتوث، واتساب، أي طريقة)</div>
+      <div id="host-code-block"></div>
+      <div class="setup-label" style="font-weight:900;font-size:1rem;margin-top:14px" data-i18n="hostSimpleStep2">٢. لما يرجعلك صديقك رمزه، الصقه هون واضغط ربط</div>
+      <textarea class="code-textarea" id="host-answer-paste" rows="3"></textarea>
+      <button class="start-btn" onclick="hostPasteAnswer()" data-i18n="connectCodeBtn">ربط عبر الرمز</button>
+    </div>
+    <div class="host-native-only" style="flex-direction:column;align-items:center;gap:12px;width:100%;">
+      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">هاد عنوان جهازك — عطيه لصاحبك يكتبه بشاشة "الانضمام للعبة" عندو</div>
+      <div id="host-ip-display" class="ip-display-box">—</div>
+      <button class="start-btn" id="host-ip-copy-btn" style="width:auto;padding:10px 28px;">📋 نسخ العنوان</button>
+      <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">بمجرد ما يتصل، رح يبين اسمه فوق تلقائياً — نفس العنوان صالح لأكثر من صاحب</div>
+    </div>
     <button class="win-secondary-btn" style="width:100%" onclick="document.getElementById('host-qr-area').style.display='none';document.getElementById('host-add-btn').style.display='block';" data-i18n="cancelBtn">إلغاء</button>
   </div>
   <button class="start-btn" id="host-start-btn" onclick="hostStartGame()" style="background:linear-gradient(135deg,var(--green),#0099a8);display:none" data-i18n="hostStartBtn">بدء اللعبة الآن 🎱</button>
@@ -475,14 +492,21 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   <button class="back-btn" data-i18n="back" onclick="cancelNetwork();showScreen('s-connect')">→ رجوع</button>
   <div class="section-title" data-i18n="joinGameBtn">الانضمام إلى اللعبة</div>
   <div id="join-step1" class="net-section">
-    <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="joinSimpleStep1">١. اطلب من صديقك رمز الاستضافة (بيرسلهولك بلوتوث أو أي طريقة)</div>
-    <div class="setup-label" style="font-weight:900;font-size:1rem;margin-top:8px" data-i18n="joinSimpleStep1b">٢. الصق الرمز هون واضغط اتصال</div>
+    <div class="webrtc-only">
+      <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="joinSimpleStep1">١. اطلب من صديقك رمز الاستضافة (بيرسلهولك بلوتوث أو أي طريقة)</div>
+      <div class="setup-label" style="font-weight:900;font-size:1rem;margin-top:8px" data-i18n="joinSimpleStep1b">٢. الصق الرمز هون واضغط اتصال</div>
+    </div>
+    <div class="join-native-only" style="flex-direction:column;gap:8px;width:100%;">
+      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">اسأل صاحبك شو عنوان الـ IP الظاهر عنده بشاشة الاستضافة، واكتبه بالخانة تحت بالضبط زي ما هو</div>
+    </div>
     <textarea class="code-textarea" id="join-offer-paste" rows="3"></textarea>
-    <button class="start-btn" onclick="joinPasteOffer()" data-i18n="connectViaCode">اتصال عبر الرمز</button>
+    <button class="start-btn" id="join-connect-btn" onclick="joinPasteOffer()" data-i18n="connectViaCode">اتصال عبر الرمز</button>
   </div>
   <div id="join-step2" class="net-section" style="display:none">
-    <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="joinSimpleStep3">٣. اضغط الزر وأرسل هذا الرمز الجديد لصديقك بنفس الطريقة</div>
-    <div id="join-code-block"></div>
+    <div class="webrtc-only">
+      <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="joinSimpleStep3">٣. اضغط الزر وأرسل هذا الرمز الجديد لصديقك بنفس الطريقة</div>
+      <div id="join-code-block"></div>
+    </div>
     <div class="arrange-info" id="join-waiting-text" data-i18n="waitingHostStart">بانتظار أن يبدأ صاحب نقطة الاتصال اللعبة...</div>
   </div>
 </div>
@@ -633,6 +657,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 <div class="credit">CREATED BY ALMOLHAM OMRAN</div>
 
 <script>
+if(window.AndroidBridge){document.documentElement.classList.add('native-app');}
 // ══════════════════════════════════════════
 //  TRANSLATIONS
 // ══════════════════════════════════════════
@@ -1476,11 +1501,13 @@ function startSetup(){
     lastSetup={mode:'ai',count:chosenAICount,difficulty};
   } else {
     const friendNames=[];
+    const usedRandomNames=new Set();
+    usedRandomNames.add(p1);
     for(let i=1;i<=chosenHumanCount;i++){
       const inp=document.getElementById('inp-p'+i);
       const v=i===1?p1:(inp?inp.value.trim():'');
       if(i>1)friendNames.push(v);
-      players.push(mkPlayer(v||T('pLabel')+' '+i,false));
+      players.push(mkPlayer(v||randomPlayerName(usedRandomNames),false));
     }
     savedNames.friends=friendNames;
     lastSetup={mode:'friends',count:chosenHumanCount};
@@ -1492,6 +1519,14 @@ function startSetup(){
 }
 function mkPlayer(name,isAI,grid){
   return{name,isAI,grid:(grid&&grid.length===25)?grid:shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]),scratched:new Set(),bingoCount:0,winLines:[]};
+}
+const RANDOM_PLAYER_NAMES=['سامر','ليان','كريم','جود','ياسمين','عمر','ريم','خالد','ملك','زين','نور','طارق','ديما','فادي','هبة','وسيم','رنا','باسل'];
+function randomPlayerName(usedSet){
+  const avail=RANDOM_PLAYER_NAMES.filter(n=>!usedSet.has(n));
+  const pool=avail.length?avail:RANDOM_PLAYER_NAMES;
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  usedSet.add(pick);
+  return pick;
 }
 
 // ══════════════════════════════════════════
@@ -1625,7 +1660,7 @@ function renderScoreboard(){
     const row=document.createElement('div');row.className='score-row'+(i===currentIdx?' active-row':'');
     const lets=BINGO.map((_,j)=>`<div class="sl${j<p.bingoCount?' done':''}">${BINGO[j]}</div>`).join('');
     const leaderIcon=(maxB>0&&p.bingoCount===maxB)?'<span class="leader-crown">👑</span>':'';
-    row.innerHTML=`<div class="score-name">${leaderIcon}${p.name}</div><div class="score-letters">${lets}</div>`;
+    row.innerHTML=`<div class="score-name">${leaderIcon}${i===currentIdx?'▶ ':''}${p.name}</div><div class="score-letters">${lets}</div>`;
     el.appendChild(row);
   });
 }
@@ -1645,7 +1680,7 @@ function doScratch(pidx,num){
   if(gameOver)return;
   players.forEach(p=>p.scratched.add(num));
   playSound('scratch');
-  let winner=-1;
+  let winners=[];
   players.forEach((p,i)=>{
     const lines=checkLines(p);
     const prev=p.bingoCount;
@@ -1657,9 +1692,9 @@ function doScratch(pidx,num){
       playSound('bingo');
       if(navigator.vibrate)navigator.vibrate(45);
     }
-    if(p.bingoCount>=5&&winner===-1)winner=i;
+    if(p.bingoCount>=5)winners.push(i);
   });
-  if(winner!==-1){endGame(winner);return;}
+  if(winners.length){endGame(winners);return;}
   nextTurn();
 }
 
@@ -1769,9 +1804,12 @@ function aiExpert(p,avail){
 //  WIN
 // ══════════════════════════════════════════
 let lastWinnerWasHuman=false, lastLevelStars=0, lastXPGain=0;
-function endGame(wi){
+let lastGameWinnerIdx=0; // لتحديد مين يبلش الجولة الجاية بإعادة اللعب الشبكي (الفائز، مو صاحب نقطة الاتصال دايماً)
+function endGame(winnerIndices){
   gameOver=true;inputLocked=true;
   document.querySelectorAll('.gcell.tutorial-hint').forEach(c=>c.classList.remove('tutorial-hint'));
+  const wi=winnerIndices[0];
+  lastGameWinnerIdx=wi;
   if(tutorialMode){
     tutorialMode=false;
     localStorage.setItem('bingo_onboarded','1');
@@ -1795,16 +1833,19 @@ function endGame(wi){
   if(mode==='tournament'){handleTournamentMatchEnd(wi);return;}
   if(netMode&&netRole==='host'){
     broadcastState();
-    hostConns.forEach(c=>{ if(c.dc&&c.dc.readyState==='open') c.dc.send(JSON.stringify({type:'win',winnerIndex:wi})); });
+    hostConns.forEach(c=>{ if(c.dc&&c.dc.readyState==='open') c.dc.send(JSON.stringify({type:'win',winnerIndices})); });
   }
-  lastWinnerWasHuman=!players[wi].isAI;
-  playSound(!players[wi].isAI?'win':'lose');
-  if(navigator.vibrate)navigator.vibrate(!players[wi].isAI?[90,50,90,50,220]:[120]);
-  document.getElementById('win-name').textContent='🏆 '+players[wi].name;
-  const losers=players.filter((_,i)=>i!==wi).map(p=>p.name);
+  const winnerNames=winnerIndices.map(i=>players[i].name);
+  lastWinnerWasHuman=winnerIndices.some(i=>!players[i].isAI);
+  const iWonNetwork = netMode ? winnerIndices.includes(0) : null;
+  const soundWin = netMode ? iWonNetwork : lastWinnerWasHuman;
+  playSound(soundWin?'win':'lose');
+  if(navigator.vibrate)navigator.vibrate(soundWin?[90,50,90,50,220]:[120]);
+  document.getElementById('win-name').textContent='🏆 '+winnerNames.join('، ');
+  const losers=players.filter((_,i)=>!winnerIndices.includes(i)).map(p=>p.name);
   document.getElementById('lose-list').textContent=losers.length?T('lost')+' '+losers.join('، '):'';
 
-  const wonByMe = (mode==='net') ? (wi===0) : lastWinnerWasHuman;
+  const wonByMe = netMode ? iWonNetwork : lastWinnerWasHuman;
   recordGameResult(wonByMe, totalTurns+1);
   if(wonByMe && (totalTurns+1)<=10) unlockAchievement('fast_win');
   if(mode==='net' && wonByMe) unlockAchievement('net_player');
@@ -1886,7 +1927,7 @@ function endGame(wi){
 function onWinPrimary(){
   if(netMode&&netRole==='host'){
     players.forEach(p=>{p.scratched=new Set();p.bingoCount=0;p.winLines=[];});
-    currentIdx=0;totalTurns=0;gameOver=false;
+    currentIdx=lastGameWinnerIdx;totalTurns=0;gameOver=false;
     broadcastState(true);
     renderGame();
     return;
@@ -2172,11 +2213,12 @@ async function hostAddPlayer(){
       AndroidBridge.startHost();
     }
     const ip=AndroidBridge.getLocalIp()||'?';
-    renderCodeBlock(document.getElementById('host-code-block'),ip);
-    const hap=document.getElementById('host-answer-paste');if(hap)hap.style.display='none';
-    const connectBtn=document.querySelector('#host-qr-area button[onclick="hostPasteAnswer()"]');if(connectBtn)connectBtn.style.display='none';
-    const s1=document.querySelector('[data-i18n="hostSimpleStep1"]');if(s1)s1.textContent='١. أعطِ صديقك عنوان الـ IP هاد، وخليه يكتبه بشاشة "الانضمام للعبة"';
-    const s2=document.querySelector('[data-i18n="hostSimpleStep2"]');if(s2)s2.textContent='٢. بمجرد ما يتصل، رح يظهر بالقائمة فوق تلقائياً';
+    document.getElementById('host-ip-display').textContent=ip;
+    const copyBtn=document.getElementById('host-ip-copy-btn');
+    copyBtn.onclick=()=>{
+      if(navigator.clipboard)navigator.clipboard.writeText(ip).catch(()=>{});
+      showToast(T('codeCopiedMsg'));
+    };
     document.getElementById('host-qr-area').style.display='flex';
     document.getElementById('host-add-btn').style.display='none';
     return;
@@ -2254,10 +2296,15 @@ function startJoinFlow(){
   netMode=true;netRole='join';myJoinIndex=null;dailyMode=false;tournament=null;
   document.getElementById('join-step1').style.display='flex';
   document.getElementById('join-step2').style.display='none';
-  if(window.AndroidBridge){
-    const s1=document.querySelector('[data-i18n="joinSimpleStep1"]');if(s1)s1.textContent='١. اطلب من صديقك عنوان الـ IP يلي ظاهر عنده بشاشة الاستضافة';
-    const s1b=document.querySelector('[data-i18n="joinSimpleStep1b"]');if(s1b)s1b.textContent='٢. اكتب العنوان هون واضغط اتصال';
-    const jop=document.getElementById('join-offer-paste');if(jop)jop.placeholder='مثال: 192.168.43.1';
+  const jop=document.getElementById('join-offer-paste');
+  if(window.AndroidBridge&&jop){
+    jop.placeholder='مثال: 192.168.43.1';
+    jop.rows=1;
+    jop.style.textAlign='center';
+    jop.style.direction='ltr';
+    jop.style.fontSize='1.3rem';
+    const cb=document.getElementById('join-connect-btn');
+    if(cb)cb.textContent='📲 اتصال';
   }
   showScreen('s-join');
 }
@@ -2338,7 +2385,7 @@ function joinOnMessage(raw){
     if(msg.starting){showScreen('s-game');unlockAchievement('net_player');}
     if(document.getElementById('s-game').classList.contains('active'))netRenderClientGame();
   } else if(msg.type==='win'){
-    netClientShowWin(msg.winnerIndex);
+    netClientShowWin(msg.winnerIndices);
   } else if(msg.type==='emoji'){
     showEmojiBubble(msg.emoji,msg.from);
   }
@@ -2360,18 +2407,22 @@ function netRenderClientGame(){
   renderScoreboard();
   updateEmojiRowVisibility();
 }
-function netClientShowWin(wi){
+function netClientShowWin(winnerIndices){
   gameOver=true;
-  const wonByMe=(wi===myJoinIndex);
+  const wonByMe=winnerIndices.includes(myJoinIndex);
   recordGameResult(wonByMe,totalTurns+1);
   if(wonByMe){
     if((totalTurns+1)<=10)unlockAchievement('fast_win');
     unlockAchievement('net_player');
   }
-  document.getElementById('win-name').textContent='🏆 '+(players[wi]?players[wi].name:'');
+  playSound(wonByMe?'win':'lose');
+  if(navigator.vibrate)navigator.vibrate(wonByMe?[90,50,90,50,220]:[120]);
+  const winnerNames=winnerIndices.map(i=>players[i]?players[i].name:'').filter(Boolean);
+  document.getElementById('win-name').textContent='🏆 '+winnerNames.join('، ');
+  const losers=players.filter((_,i)=>!winnerIndices.includes(i)).map(p=>p.name);
+  document.getElementById('lose-list').textContent=losers.length?T('lost')+' '+losers.join('، '):'';
   document.getElementById('win-stars').style.display='none';
   document.getElementById('win-xp').style.display='none';
-  document.getElementById('lose-list').textContent='';
   document.getElementById('win-secondary-btn').style.display='inline-block';
   document.getElementById('win-secondary-btn').textContent=T('leaveRoomBtn');
   document.getElementById('win-secondary-btn').onclick=leaveNetworkRoom;
