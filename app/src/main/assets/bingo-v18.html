@@ -2034,10 +2034,47 @@ let hostConns=[];
 let joinConn=null;
 let myJoinIndex=null;
 
+// ══════════════════════════════════════════
+//  جسر الاتصال المباشر (Android WebView + Kotlin Socket) — بديل WebRTC
+//  بيحاكي واجهة RTCDataChannel (readyState/send/onmessage) تماماً، فباقي
+//  كود البروتوكول (hostOnMessage, joinOnMessage, broadcastState...) ما بيحتاج يتغيّر إطلاقاً.
+// ══════════════════════════════════════════
+const nativeHostConnsById={};
+function b64dec(s){try{return decodeURIComponent(escape(window.atob(s)));}catch(e){return '';}}
+if(window.AndroidBridge){
+  window.onNetClientConnected=function(id){
+    const dc={readyState:'open',onmessage:null,send:function(data){AndroidBridge.sendToClient(id,data);}};
+    const connEntry={pc:null,dc,name:null,idx:null};
+    dc.onmessage=(e)=>hostOnMessage(connEntry,e.data);
+    nativeHostConnsById[id]=connEntry;
+    hostConns.push(connEntry);
+  };
+  window.onNetMessageFromClient=function(id,b64data){
+    const entry=nativeHostConnsById[id];
+    if(!entry||!entry.dc.onmessage)return;
+    entry.dc.onmessage({data:b64dec(b64data)});
+  };
+  window.onNetClientDisconnected=function(id){ delete nativeHostConnsById[id]; };
+  window.onNetJoinConnected=function(){
+    const dc={readyState:'open',onmessage:null,send:function(data){AndroidBridge.sendToHost(data);}};
+    joinConn={pc:null,dc};
+    dc.onmessage=(ev)=>joinOnMessage(ev.data);
+    const nameV=playerName||T('pLabel');
+    dc.send(JSON.stringify({type:'hello',name:nameV,grid:pendingGuestGrid}));
+    const wt=document.getElementById('join-waiting-text');
+    if(wt)wt.textContent=T('connectedWaitingHostMsg');
+  };
+  window.onNetMessageFromHost=function(b64data){
+    if(joinConn&&joinConn.dc&&joinConn.dc.onmessage)joinConn.dc.onmessage({data:b64dec(b64data)});
+  };
+  window.onNetError=function(msg){ showToast(T('connectionFailedMsg')); };
+}
+
 function cancelNetwork(){
   netMode=false;netRole=null;myJoinIndex=null;netArrangeContext=null;pendingGuestGrid=null;pendingOfferSdp=null;
-  hostConns.forEach(c=>{try{c.pc.close();}catch(e){}});hostConns=[];
-  if(joinConn){try{joinConn.pc.close();}catch(e){}joinConn=null;}
+  hostConns.forEach(c=>{try{if(c.pc)c.pc.close();}catch(e){}});hostConns=[];
+  if(joinConn){try{if(joinConn.pc)joinConn.pc.close();}catch(e){}joinConn=null;}
+  if(window.AndroidBridge){try{AndroidBridge.closeNetwork();}catch(e){}window.__nativeHostStarted=false;}
   document.getElementById('host-qr-area').style.display='none';
   document.getElementById('host-add-btn').style.display='block';
   document.getElementById('host-start-btn').style.display='none';
@@ -2129,6 +2166,21 @@ function trimSdpForQR(sdp){
 }
 async function hostAddPlayer(){
   if(players.length>=6){showToast(T('maxPlayersReachedMsg'));return;}
+  if(window.AndroidBridge){
+    if(!window.__nativeHostStarted){
+      window.__nativeHostStarted=true;
+      AndroidBridge.startHost();
+    }
+    const ip=AndroidBridge.getLocalIp()||'?';
+    renderCodeBlock(document.getElementById('host-code-block'),ip);
+    const hap=document.getElementById('host-answer-paste');if(hap)hap.style.display='none';
+    const connectBtn=document.querySelector('#host-qr-area button[onclick="hostPasteAnswer()"]');if(connectBtn)connectBtn.style.display='none';
+    const s1=document.querySelector('[data-i18n="hostSimpleStep1"]');if(s1)s1.textContent='١. أعطِ صديقك عنوان الـ IP هاد، وخليه يكتبه بشاشة "الانضمام للعبة"';
+    const s2=document.querySelector('[data-i18n="hostSimpleStep2"]');if(s2)s2.textContent='٢. بمجرد ما يتصل، رح يظهر بالقائمة فوق تلقائياً';
+    document.getElementById('host-qr-area').style.display='flex';
+    document.getElementById('host-add-btn').style.display='none';
+    return;
+  }
   let pc,payload,connEntry;
   try{
     pc=new RTCPeerConnection({iceServers:[]});
@@ -2202,6 +2254,11 @@ function startJoinFlow(){
   netMode=true;netRole='join';myJoinIndex=null;dailyMode=false;tournament=null;
   document.getElementById('join-step1').style.display='flex';
   document.getElementById('join-step2').style.display='none';
+  if(window.AndroidBridge){
+    const s1=document.querySelector('[data-i18n="joinSimpleStep1"]');if(s1)s1.textContent='١. اطلب من صديقك عنوان الـ IP يلي ظاهر عنده بشاشة الاستضافة';
+    const s1b=document.querySelector('[data-i18n="joinSimpleStep1b"]');if(s1b)s1b.textContent='٢. اكتب العنوان هون واضغط اتصال';
+    const jop=document.getElementById('join-offer-paste');if(jop)jop.placeholder='مثال: 192.168.43.1';
+  }
   showScreen('s-join');
 }
 async function joinApplyOfferData(dataStr){
@@ -2219,6 +2276,16 @@ async function joinApplyOfferData(dataStr){
 }
 async function completeGuestJoin(){
   const nameV=playerName||T('pLabel');
+  if(window.AndroidBridge){
+    AndroidBridge.joinHost(window.__pendingHostIp||'');
+    document.getElementById('join-step1').style.display='none';
+    document.getElementById('join-step2').style.display='flex';
+    document.getElementById('join-code-block').innerHTML='';
+    const wt=document.getElementById('join-waiting-text');
+    if(wt)wt.textContent='...جاري الاتصال';
+    showScreen('s-join');
+    return;
+  }
   let pc,answerText;
   try{
     pc=new RTCPeerConnection({iceServers:[]});
@@ -2248,6 +2315,17 @@ async function completeGuestJoin(){
 function joinPasteOffer(){
   const v=(document.getElementById('join-offer-paste').value||'').trim();
   if(!v){showToast(T('pasteOfferFirstMsg'));return;}
+  if(window.AndroidBridge){
+    window.__pendingHostIp=v;
+    netArrangeContext='guest';
+    arrangeSelected=[];
+    const nameV=playerName||T('pLabel');
+    document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
+    renderPool();renderAGrid();
+    document.getElementById('arr-confirm-btn').disabled=true;
+    showScreen('s-arrange');
+    return;
+  }
   joinApplyOfferData(v);
 }
 function joinOnMessage(raw){
