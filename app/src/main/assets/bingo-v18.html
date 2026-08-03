@@ -13,6 +13,11 @@
   --gold:#f0b429;--gold2:#e67e22;--green:#00c97a;--red:#ff4757;
   --blue:#3d8bff;--purple:#8b5cf6;--text:#e8e8f8;--muted:#6b7280;--marked:#1e1e38;
 }
+html.light-theme{
+  --bg:#f4f5fb;--surface:#ffffff;--card:#ffffff;--border:#dcdfe8;
+  --gold:#c9860f;--gold2:#a8620a;--green:#0a8f57;--red:#d92b3e;
+  --blue:#1d5fd6;--purple:#6d3ec9;--text:#191a24;--muted:#5b6072;--marked:#eef0f7;
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
@@ -364,7 +369,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     </button>
     <button class="menu-card card-daily" id="daily-card" onclick="startDailyChallenge()">
       <span class="mc-icon" id="daily-icon">🗓️</span>
-      <span class="mc-text"><b data-i18n="dailyChallengeTitle">التحدي اليومي</b><small id="daily-sub">تحدٍ جديد كل يوم</small></span>
+      <span class="mc-text"><b id="daily-title" data-i18n="dailyChallengeTitle">التحدي اليومي</b><small id="daily-sub">تحدٍ جديد كل يوم</small></span>
     </button>
     <button class="menu-card card-tournament" onclick="showScreen('s-tournament-setup')">
       <span class="mc-icon">🏆</span>
@@ -467,6 +472,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="setup-label"><span data-i18n="joinedPlayersLabel">اللاعبون المنضمّون (</span><span id="host-count">1</span>/6)</div>
     <div id="host-player-list" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
     <button class="start-btn" id="host-add-btn" onclick="hostAddPlayer()" data-i18n="addPlayerBtn">➕ إضافة لاعب جديد</button>
+    <button class="win-secondary-btn" style="width:100%;margin-top:8px" id="host-add-ai-btn" onclick="hostAddAiBot()">🤖 إضافة لاعب ذكاء اصطناعي</button>
   </div>
   <div id="host-qr-area" class="net-section" style="display:none">
     <div class="webrtc-only">
@@ -597,6 +603,15 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <button class="choice-btn" onclick="setLang('fr')" id="lang-fr">FR</button>
       <button class="choice-btn" onclick="setLang('es')" id="lang-es">ES</button>
       <button class="choice-btn" onclick="setLang('de')" id="lang-de">DE</button>
+    </div>
+  </div>
+
+  <div class="set-card">
+    <div class="set-label">🌓 ثيم اللعبة</div>
+    <div class="row-btns">
+      <button class="choice-btn" onclick="setAppTheme('dark')" id="theme-dark-btn">🌙 داكن</button>
+      <button class="choice-btn" onclick="setAppTheme('light')" id="theme-light-btn">☀️ فاتح</button>
+      <button class="choice-btn" onclick="setAppTheme('system')" id="theme-system-btn">📱 مطابق للنظام</button>
     </div>
   </div>
 
@@ -1012,6 +1027,7 @@ let gamesWon=parseInt(localStorage.getItem('bingo_games_won')||'0',10);
 let fastestWin=localStorage.getItem('bingo_fastest_win')?parseInt(localStorage.getItem('bingo_fastest_win'),10):null;
 let avatar=localStorage.getItem('bingo_avatar')||'😀';
 let dailyLastDate=localStorage.getItem('bingo_daily_last')||'';
+let dailyAttemptDate=localStorage.getItem('bingo_daily_attempt')||'';
 let dailyStreak=parseInt(localStorage.getItem('bingo_daily_streak')||'0',10);
 const AVATARS=['😀','😎','🤠','🥳','👽','🤖','🦁','🐯','🐸','🦄','🎩','👑','🐼','🦊','🐧','🎃'];
 
@@ -1056,6 +1072,32 @@ if(settings.sfxVol===undefined)settings.sfxVol=0.8;
 if(settings.musicVol===undefined)settings.musicVol=0.35;
 if(settings.theme===undefined)settings.theme='gold';
 if(settings.speed===undefined)settings.speed=1;
+if(settings.appearance===undefined)settings.appearance='dark';
+function applyAppTheme(){
+  let mode=settings.appearance;
+  if(mode==='system'){
+    mode=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+  }
+  document.documentElement.classList.toggle('light-theme',mode==='light');
+}
+function setAppTheme(mode){
+  settings.appearance=mode;
+  saveSettings();
+  applyAppTheme();
+  updateThemeButtons();
+}
+function updateThemeButtons(){
+  ['dark','light','system'].forEach(m=>{
+    const b=document.getElementById('theme-'+m+'-btn');
+    if(b)b.classList.toggle('selected',settings.appearance===m);
+  });
+}
+applyAppTheme();
+if(window.matchMedia){
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{
+    if(settings.appearance==='system')applyAppTheme();
+  });
+}
 function saveSettings(){localStorage.setItem('bingo_settings',JSON.stringify(settings));}
 function saveXP(){localStorage.setItem('bingo_xp',String(xp));}
 function saveStars(){localStorage.setItem('bingo_stars',JSON.stringify(levelStars));}
@@ -1124,15 +1166,26 @@ const DAILY_LOOKS=[
   {icon:'🎲',c1:'#f472b6',c2:'#be185d'},
   {icon:'🏆',c1:'#f0b429',c2:'#e67e22'}
 ];
-function dailyLook(){
+const DAILY_NAMES_AR=['تحدي الشرارة','تحدي البرق','تحدي الهدف','تحدي الألماس','تحدي النجمة','تحدي الحظ','تحدي البطولة'];
+const DAILY_NAMES_EN=['Spark Challenge','Lightning Challenge','Target Challenge','Diamond Challenge','Star Challenge','Lucky Challenge','Champion Challenge'];
+function dailyDayOfYear(){
   const d=new Date();const start=new Date(d.getFullYear(),0,0);
-  const dayOfYear=Math.floor((d-start)/86400000);
-  return DAILY_LOOKS[dayOfYear%DAILY_LOOKS.length];
+  return Math.floor((d-start)/86400000);
+}
+function dailyName(){
+  const i=dailyDayOfYear()%DAILY_NAMES_AR.length;
+  return lang==='ar'?DAILY_NAMES_AR[i]:DAILY_NAMES_EN[i];
+}
+function dailyLook(){
+  return DAILY_LOOKS[dailyDayOfYear()%DAILY_LOOKS.length];
 }
 function updateDailySub(){
   const el=document.getElementById('daily-sub');if(!el)return;
-  const done=dailyLastDate===todayKey();
-  el.textContent=(lang==='ar'?'تحدٍ جديد كل يوم':'A new challenge every day')+(done?' ✓':'');
+  const titleEl=document.getElementById('daily-title');
+  const used=dailyAttemptDate===todayKey();
+  if(titleEl)titleEl.textContent=(used?'✓ ':'')+dailyName();
+  el.textContent=used?(lang==='ar'?'خلصت تحدي اليوم — رجعلي بكرا':'Done for today — come back tomorrow')
+                     :(lang==='ar'?'عندك محاولة وحدة بس اليوم':'You get one try today');
   const look=dailyLook();
   const icon=document.getElementById('daily-icon');
   if(icon)icon.textContent=look.icon;
@@ -1140,6 +1193,9 @@ function updateDailySub(){
   if(card)card.style.background=`linear-gradient(135deg,${look.c1},${look.c2})`;
 }
 function startDailyChallenge(){
+  if(dailyAttemptDate===todayKey()){showToast(T('dailyAlreadyDoneMsg'));return;}
+  dailyAttemptDate=todayKey();
+  localStorage.setItem('bingo_daily_attempt',dailyAttemptDate);
   dailyMode=true;tournament=null;
   const idx=dailyLevelIndex();
   const cfg=levelConfig(idx);
@@ -1211,7 +1267,6 @@ function tutorialHighlightBestMove(){
 }
 function finishLoading(){
   startAmbientMusic();
-  document.getElementById('speed-widget').style.display='flex';
   document.getElementById('settings-widget').style.display='flex';
   if(!playerName&&!localStorage.getItem('bingo_onboarded')){
     showScreen('s-onboard');
@@ -1387,7 +1442,9 @@ function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.
 function showScreen(id,fromNav){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);
   if(id==='s-welcome'){renderWelcomePlayer();updateDailySub();}
-  if(id==='s-settings')document.getElementById('inp-settings-name').value=playerName;
+  if(id==='s-settings'){document.getElementById('inp-settings-name').value=playerName;updateThemeButtons();}
+  const sw=document.getElementById('speed-widget');
+  if(sw)sw.style.display=(id==='s-game'&&mode==='ai')?'flex':'none';
   if(!fromNav){
     if(id==='s-welcome')history.replaceState({screen:id},'','#'+id);
     else history.pushState({screen:id},'','#'+id);
@@ -1440,12 +1497,12 @@ function showSetup(m){
   document.getElementById('t-back').onclick=function(){showScreen('s-welcome');};
   if(playerName)document.getElementById('inp-p1').value=playerName;
   if(m==='ai'){
-    buildCntBtns('ai-count-btns',1,4,'ai');
+    buildCntBtns('ai-count-btns',1,5,'ai');
     const lastCount=(lastSetup.mode==='ai'&&lastSetup.count)?lastSetup.count:1;
     const lastDiff=(lastSetup.mode==='ai'&&lastSetup.difficulty)?lastSetup.difficulty:'medium';
     selectDiff(lastDiff);selectAI(lastCount);
   } else {
-    buildCntBtns('human-count-btns',2,5,'human');
+    buildCntBtns('human-count-btns',2,6,'human');
     const lastCount=(lastSetup.mode==='friends'&&lastSetup.count)?lastSetup.count:2;
     selectHuman(lastCount);
   }
@@ -1563,23 +1620,29 @@ function pickNum(n){
 }
 function removeAt(i){if(i>=arrangeSelected.length)return;arrangeSelected.splice(i,1);renderPool();renderAGrid();document.getElementById('arr-confirm-btn').disabled=true;}
 function randomArrange(){arrangeSelected=shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]);renderPool();renderAGrid();document.getElementById('arr-confirm-btn').disabled=false;}
-let netArrangeContext=null; // null | 'host' | 'guest'
+let netArrangeContext=null; // null | 'host-lobby' | 'guest' | 'guest-inroom'
 let pendingGuestGrid=null, pendingOfferSdp=null;
+let pendingArrangeFromGuests=0;
 function confirmArrange(){
   if(arrangeSelected.length<25){showToast(T('completeGrid'));return;}
-  if(netArrangeContext==='host'){
-    players=[mkPlayer(playerName||T('pLabel')+' 1',false,[...arrangeSelected])];
+  if(netArrangeContext==='host-lobby'){
     netArrangeContext=null;
-    renderHostPlayerList();
-    document.getElementById('host-qr-area').style.display='none';
-    document.getElementById('host-start-btn').style.display='none';
-    showScreen('s-host');
+    players[0].grid=[...arrangeSelected];
+    checkAllArrangedThenStart();
     return;
   }
   if(netArrangeContext==='guest'){
     pendingGuestGrid=[...arrangeSelected];
     netArrangeContext=null;
     completeGuestJoin();
+    return;
+  }
+  if(netArrangeContext==='guest-inroom'){
+    netArrangeContext=null;
+    if(joinConn&&joinConn.dc)joinConn.dc.send(JSON.stringify({type:'grid',grid:[...arrangeSelected]}));
+    const wt=document.getElementById('join-waiting-text');
+    if(wt)wt.textContent='رتّبت شبكتك ✅ — بانتظار باقي اللاعبين يرتبوا شبكاتهم...';
+    showScreen('s-join');
     return;
   }
   players[arrangingIdx].grid=[...arrangeSelected];
@@ -1722,6 +1785,7 @@ function nextTurn(){
     broadcastState();
     if(currentIdx===0){renderGame();}
     else{renderGameForHuman();}
+    if(p.isAI){setTimeout(doAITurn,delay(1000));}
     return;
   }
   if(p.isAI){
@@ -2101,7 +2165,8 @@ if(window.AndroidBridge){
     joinConn={pc:null,dc};
     dc.onmessage=(ev)=>joinOnMessage(ev.data);
     const nameV=playerName||T('pLabel');
-    dc.send(JSON.stringify({type:'hello',name:nameV,grid:pendingGuestGrid}));
+    const tempGrid=shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]);
+    dc.send(JSON.stringify({type:'hello',name:nameV,grid:tempGrid}));
     const wt=document.getElementById('join-waiting-text');
     if(wt)wt.textContent=T('connectedWaitingHostMsg');
   };
@@ -2175,23 +2240,32 @@ function renderCodeBlock(containerEl,text){
 function startHostFlow(){
   netMode=true;netRole='host';dailyMode=false;tournament=null;
   hostConns=[];
-  netArrangeContext='host';
-  arrangeSelected=[];
-  document.getElementById('arrange-title').textContent=(playerName||T('pLabel')+' 1')+'، '+T('arrangeTitle');
-  renderPool();renderAGrid();
-  document.getElementById('arr-confirm-btn').disabled=true;
-  showScreen('s-arrange');
+  const tempGrid=shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]);
+  players=[mkPlayer(playerName||T('pLabel')+' 1',false,tempGrid)];
+  document.getElementById('host-qr-area').style.display='none';
+  document.getElementById('host-add-btn').style.display='block';
+  const aiBtn=document.getElementById('host-add-ai-btn');if(aiBtn)aiBtn.style.display='block';
+  document.getElementById('host-start-btn').style.display='none';
+  renderHostPlayerList();
+  showScreen('s-host');
+}
+function hostAddAiBot(){
+  if(players.length>=6){showToast(T('maxPlayersReachedMsg'));return;}
+  const used=new Set(players.map(p=>p.name));
+  players.push(mkPlayer(randomPlayerName(used),true));
+  renderHostPlayerList();
 }
 function renderHostPlayerList(){
   const el=document.getElementById('host-player-list');el.innerHTML='';
   players.forEach((p,i)=>{
     const d=document.createElement('div');d.className='net-player-item';
-    d.textContent=(i===0?'👑 ':'')+p.name+(i===0?' (أنت)':'');
+    d.textContent=(i===0?'👑 ':(p.isAI?'🤖 ':''))+p.name+(i===0?' (أنت)':'');
     el.appendChild(d);
   });
   document.getElementById('host-count').textContent=players.length;
   document.getElementById('host-start-btn').style.display=players.length>=2?'block':'none';
   document.getElementById('host-add-btn').style.display=players.length<6?'block':'none';
+  const aiBtn=document.getElementById('host-add-ai-btn');if(aiBtn)aiBtn.style.display=players.length<6?'block':'none';
 }
 // The connection is always over a phone hotspot (IPv4-only in practice), so IPv6-literal
 // candidates are dead weight — a smaller payload means a much simpler, faster-to-scan QR
@@ -2271,6 +2345,10 @@ function hostOnMessage(connEntry,raw){
     if(currentIdx!==connEntry.idx)return;
     if(players[currentIdx].scratched.has(msg.num))return;
     doScratch(currentIdx,msg.num);
+  } else if(msg.type==='grid'){
+    if(connEntry.idx!=null&&players[connEntry.idx]){players[connEntry.idx].grid=msg.grid;}
+    pendingArrangeFromGuests=Math.max(0,pendingArrangeFromGuests-1);
+    checkAllArrangedThenStart();
   } else if(msg.type==='emoji'){
     hostConns.forEach(c=>{if(c!==connEntry&&c.dc&&c.dc.readyState==='open')c.dc.send(raw);});
     showEmojiBubble(msg.emoji,msg.from);
@@ -2279,6 +2357,20 @@ function hostOnMessage(connEntry,raw){
 function hostStartGame(){
   if(players.length<2){showToast(T('needOnePlayerMsg'));return;}
   document.getElementById('host-qr-area').style.display='none';
+  document.getElementById('host-add-btn').style.display='none';
+  const aiBtn=document.getElementById('host-add-ai-btn');if(aiBtn)aiBtn.style.display='none';
+  document.getElementById('host-start-btn').style.display='none';
+  hostConns.forEach(c=>{ if(c.dc&&c.dc.readyState==='open') c.dc.send(JSON.stringify({type:'arrangeNow'})); });
+  pendingArrangeFromGuests=hostConns.length;
+  netArrangeContext='host-lobby';
+  arrangeSelected=[];
+  document.getElementById('arrange-title').textContent=(playerName||T('pLabel')+' 1')+'، '+T('arrangeTitle');
+  renderPool();renderAGrid();
+  document.getElementById('arr-confirm-btn').disabled=true;
+  showScreen('s-arrange');
+}
+function checkAllArrangedThenStart(){
+  if(pendingArrangeFromGuests>0)return;
   currentIdx=0;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
   unlockAchievement('net_player');
   broadcastState(true);
@@ -2363,14 +2455,13 @@ function joinPasteOffer(){
   const v=(document.getElementById('join-offer-paste').value||'').trim();
   if(!v){showToast(T('pasteOfferFirstMsg'));return;}
   if(window.AndroidBridge){
-    window.__pendingHostIp=v;
-    netArrangeContext='guest';
-    arrangeSelected=[];
-    const nameV=playerName||T('pLabel');
-    document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
-    renderPool();renderAGrid();
-    document.getElementById('arr-confirm-btn').disabled=true;
-    showScreen('s-arrange');
+    AndroidBridge.joinHost(v);
+    document.getElementById('join-step1').style.display='none';
+    document.getElementById('join-step2').style.display='flex';
+    document.getElementById('join-code-block').innerHTML='';
+    const wt=document.getElementById('join-waiting-text');
+    if(wt)wt.textContent='...جاري الاتصال';
+    showScreen('s-join');
     return;
   }
   joinApplyOfferData(v);
@@ -2386,9 +2477,20 @@ function joinOnMessage(raw){
     if(document.getElementById('s-game').classList.contains('active'))netRenderClientGame();
   } else if(msg.type==='win'){
     netClientShowWin(msg.winnerIndices);
+  } else if(msg.type==='arrangeNow'){
+    guestArrangeNow();
   } else if(msg.type==='emoji'){
     showEmojiBubble(msg.emoji,msg.from);
   }
+}
+function guestArrangeNow(){
+  netArrangeContext='guest-inroom';
+  arrangeSelected=[];
+  const nameV=playerName||T('pLabel');
+  document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
+  renderPool();renderAGrid();
+  document.getElementById('arr-confirm-btn').disabled=true;
+  showScreen('s-arrange');
 }
 function netClientScratch(num){
   if(gameOver||myJoinIndex===null||currentIdx!==myJoinIndex)return;
