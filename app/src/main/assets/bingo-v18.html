@@ -485,7 +485,6 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="host-native-only" style="flex-direction:column;align-items:center;gap:12px;width:100%;">
       <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">هاد عنوان جهازك — عطيه لصاحبك يكتبه بشاشة "الانضمام للعبة" عندو</div>
       <div id="host-ip-display" class="ip-display-box">—</div>
-      <button class="start-btn" id="host-ip-copy-btn" style="width:auto;padding:10px 28px;">📋 نسخ العنوان</button>
       <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">بمجرد ما يتصل، رح يبين اسمه فوق تلقائياً — نفس العنوان صالح لأكثر من صاحب</div>
     </div>
     <button class="win-secondary-btn" style="width:100%" onclick="document.getElementById('host-qr-area').style.display='none';document.getElementById('host-add-btn').style.display='block';" data-i18n="cancelBtn">إلغاء</button>
@@ -513,7 +512,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <div class="setup-label" style="font-weight:900;font-size:1rem" data-i18n="joinSimpleStep3">٣. اضغط الزر وأرسل هذا الرمز الجديد لصديقك بنفس الطريقة</div>
       <div id="join-code-block"></div>
     </div>
-    <div class="arrange-info" id="join-waiting-text" data-i18n="waitingHostStart">بانتظار أن يبدأ صاحب نقطة الاتصال اللعبة...</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 0;">
+      <div style="font-size:3.5rem" id="join-waiting-icon">⏳</div>
+      <div class="pass-title" id="join-waiting-title" style="font-size:1.2rem"></div>
+      <div class="arrange-info" id="join-waiting-text" data-i18n="waitingHostStart" style="text-align:center;font-weight:700;">بانتظار أن يبدأ صاحب نقطة الاتصال اللعبة...</div>
+    </div>
   </div>
 </div>
 
@@ -1445,33 +1448,56 @@ function showScreen(id,fromNav){
   if(id==='s-settings'){document.getElementById('inp-settings-name').value=playerName;updateThemeButtons();}
   const sw=document.getElementById('speed-widget');
   if(sw)sw.style.display=(id==='s-game'&&mode==='ai')?'flex':'none';
-  if(!fromNav){
-    if(id==='s-welcome')history.replaceState({screen:id},'','#'+id);
-    else history.pushState({screen:id},'','#'+id);
+}
+// زر الرجوع: بدل ما يعتمد على تاريخ تراكمي (كان بيرجعك لشاشات لعبات سابقة قديمة)،
+// بيحسب دايماً وين المفروض يرجع بناءً على الوضع الحالي فعلياً — رجوع منطقي مو رجوع تاريخي.
+function getBackTarget(){
+  const activeEl=document.querySelector('.screen.active');
+  const id=activeEl?activeEl.id:'s-welcome';
+  switch(id){
+    case 's-game':
+      if(dailyMode||tournament)return 's-welcome';
+      if(netMode)return netRole==='host'?'s-host':(netRole==='join'?'s-join':'s-connect');
+      return 's-setup';
+    case 's-win':
+      return 's-welcome';
+    case 's-arrange':
+      if(netArrangeContext==='host-lobby')return 's-host';
+      if(netArrangeContext==='guest'||netArrangeContext==='guest-inroom')return 's-join';
+      return 's-setup';
+    case 's-host': case 's-join':
+      return 's-connect';
+    default:
+      return 's-welcome';
   }
 }
-// Android hardware back button: Capacitor maps it to the WebView's back history,
-// so every screen change above creates a real history entry — pressing back
-// now returns to the previous screen instead of exiting the app. At the main
-// menu (the replaced root state) there is no previous entry, so back exits normally.
-window.addEventListener('popstate',e=>{
-  const target=(e.state&&e.state.screen)?e.state.screen:'s-welcome';
-  showScreen(target,true);
-});
-// Hardware back button on Android: Capacitor does NOT wire this to WebView history by
-// itself — it requires the official @capacitor/app plugin's 'backButton' event (this is
-// the documented mechanism). Combined with the pushState history above, this makes back
-// actually navigate between screens instead of exiting.
-window.addEventListener('load',()=>{
-  try{
-    const Cap=window.Capacitor;
-    if(Cap&&Cap.Plugins&&Cap.Plugins.App){
-      Cap.Plugins.App.addListener('backButton',({canGoBack})=>{
-        if(canGoBack)window.history.back();
-        else Cap.Plugins.App.exitApp();
-      });
+let backPressedOnce=false;
+function goBack(){
+  const activeEl=document.querySelector('.screen.active');
+  const id=activeEl?activeEl.id:'s-welcome';
+  if(id==='s-welcome'){
+    if(backPressedOnce){
+      if(window.AndroidBridge&&AndroidBridge.exitApp)AndroidBridge.exitApp();
+      return;
     }
-  }catch(e){}
+    backPressedOnce=true;
+    showToast(T('pressBackAgainMsg'));
+    setTimeout(()=>{backPressedOnce=false;},2000);
+    return;
+  }
+  const target=getBackTarget();
+  if(netMode&&(id==='s-host'||id==='s-join'||id==='s-game'||id==='s-arrange')&&target==='s-connect'){
+    cancelNetwork();
+  }
+  showScreen(target);
+}
+// نحافظ دايماً على مدخل واحد إضافي بالتاريخ عشان زر الرجوع الفعلي بالجهاز يولّد
+// حدث popstate نقدر نمسكه، وبعدها نعيد تسليحه فوراً لأي ضغطة جاية.
+history.replaceState({app:true},'','#app');
+history.pushState({app:true},'','#app');
+window.addEventListener('popstate',()=>{
+  goBack();
+  history.pushState({app:true},'','#app');
 });
 function showToast(msg,ms=2400){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toastT);window._toastT=setTimeout(()=>t.classList.remove('show'),ms);}
 
@@ -1641,7 +1667,10 @@ function confirmArrange(){
     netArrangeContext=null;
     if(joinConn&&joinConn.dc)joinConn.dc.send(JSON.stringify({type:'grid',grid:[...arrangeSelected]}));
     const wt=document.getElementById('join-waiting-text');
-    if(wt)wt.textContent='رتّبت شبكتك ✅ — بانتظار باقي اللاعبين يرتبوا شبكاتهم...';
+    if(wt)wt.textContent='بانتظار باقي اللاعبين يرتبوا شبكاتهم...';
+    const wtt=document.getElementById('join-waiting-title');
+    if(wtt)wtt.textContent='رتّبت شبكتك ✅';
+    const wi=document.getElementById('join-waiting-icon');if(wi)wi.textContent='🙈';
     showScreen('s-join');
     return;
   }
@@ -1993,7 +2022,8 @@ function onWinPrimary(){
     players.forEach(p=>{p.scratched=new Set();p.bingoCount=0;p.winLines=[];});
     currentIdx=lastGameWinnerIdx;totalTurns=0;gameOver=false;
     broadcastState(true);
-    renderGame();
+    if(currentIdx===0){renderGame();}else{renderGameForHuman();}
+    if(players[currentIdx].isAI){setTimeout(doAITurn,delay(1000));}
     return;
   }
   if(netMode&&netRole==='join'){
@@ -2169,6 +2199,8 @@ if(window.AndroidBridge){
     dc.send(JSON.stringify({type:'hello',name:nameV,grid:tempGrid}));
     const wt=document.getElementById('join-waiting-text');
     if(wt)wt.textContent=T('connectedWaitingHostMsg');
+    const wtt=document.getElementById('join-waiting-title');if(wtt)wtt.textContent='متصل ✅';
+    const wi=document.getElementById('join-waiting-icon');if(wi)wi.textContent='⏳';
   };
   window.onNetMessageFromHost=function(b64data){
     if(joinConn&&joinConn.dc&&joinConn.dc.onmessage)joinConn.dc.onmessage({data:b64dec(b64data)});
@@ -2288,11 +2320,6 @@ async function hostAddPlayer(){
     }
     const ip=AndroidBridge.getLocalIp()||'?';
     document.getElementById('host-ip-display').textContent=ip;
-    const copyBtn=document.getElementById('host-ip-copy-btn');
-    copyBtn.onclick=()=>{
-      if(navigator.clipboard)navigator.clipboard.writeText(ip).catch(()=>{});
-      showToast(T('codeCopiedMsg'));
-    };
     document.getElementById('host-qr-area').style.display='flex';
     document.getElementById('host-add-btn').style.display='none';
     return;
@@ -2397,6 +2424,8 @@ function startJoinFlow(){
     jop.style.fontSize='1.3rem';
     const cb=document.getElementById('join-connect-btn');
     if(cb)cb.textContent='📲 اتصال';
+    const lastIp=localStorage.getItem('bingo_last_ip');
+    if(lastIp)jop.value=lastIp;
   }
   showScreen('s-join');
 }
@@ -2455,6 +2484,7 @@ function joinPasteOffer(){
   const v=(document.getElementById('join-offer-paste').value||'').trim();
   if(!v){showToast(T('pasteOfferFirstMsg'));return;}
   if(window.AndroidBridge){
+    localStorage.setItem('bingo_last_ip',v);
     AndroidBridge.joinHost(v);
     document.getElementById('join-step1').style.display='none';
     document.getElementById('join-step2').style.display='flex';
