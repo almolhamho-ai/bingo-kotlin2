@@ -139,6 +139,11 @@ class MainActivity : AppCompatActivity() {
                 joinWriter = null
             }.start()
         }
+
+        @JavascriptInterface
+        fun exitApp() {
+            runOnUiThread { finish() }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -162,10 +167,11 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("file:///android_asset/bingo-v18.html")
     }
 
-    // زر الرجوع: يرجع بصفحات الويب (شاشات اللعبة) قبل ما يطلع من التطبيق فعلياً
+    // زر الرجوع: بنستدعي دالة goBack() الداخلية بالصفحة (يلي عندها منطق "الشاشة السابقة
+    // منطقياً" الصحيح لكل حالة)، بدل الاعتماد على تاريخ التصفح الخام يلي كان يودّي لشاشات قديمة غلط.
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack()
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            webView.evaluateJavascript("if(window.goBack)goBack();", null)
             return true
         }
         return super.onKeyDown(keyCode, event)
