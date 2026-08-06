@@ -30,11 +30,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .screen.active{display:flex;}
 
 .top-widget{position:fixed;top:12px;z-index:200;display:flex;align-items:center;gap:6px;
-  background:rgba(8,8,18,.85);border:1px solid var(--border);border-radius:50px;padding:7px 12px;
-  backdrop-filter:blur(8px);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s;}
+  background:rgba(8,8,18,.85);border:1px solid var(--border);border-radius:50px;padding:11px 16px;
+  backdrop-filter:blur(8px);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s;min-height:44px;box-sizing:border-box;}
 .top-widget:active{transform:scale(.94);}
 #speed-widget{left:12px;}
-#settings-widget{right:12px;color:var(--gold);font-size:1.1rem;padding:8px 10px;}
+#settings-widget{right:12px;color:var(--gold);font-size:1.2rem;}
 
 #s-loading{justify-content:center;align-items:center;gap:0;background:var(--bg);position:relative;overflow:hidden;}
 .firework-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
@@ -95,8 +95,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .card-daily{background:linear-gradient(135deg,#fb7185,#be185d);color:#fff;box-shadow:0 4px 20px rgba(251,113,133,.35);}
 .card-tournament{background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff;box-shadow:0 4px 20px rgba(167,139,250,.35);}
 .menu-row{display:flex;flex-wrap:wrap;gap:10px;width:100%;max-width:310px;}
-.menu-btn-sm{flex:1 1 40%;padding:9px 4px;border-radius:12px;background:var(--card);border:1px solid var(--border);
-  color:var(--muted);font-family:'Tajawal',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.3;}
+.menu-btn-sm{flex:1 1 40%;padding:14px 8px;min-height:48px;border-radius:12px;background:var(--card);border:1px solid var(--border);
+  color:var(--muted);font-family:'Tajawal',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;text-align:center;line-height:1.3;
+  display:flex;align-items:center;justify-content:center;}
 .menu-btn-sm:active{transform:scale(.97);}
 .guide-btn{width:100%;max-width:400px;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--border);
   color:var(--gold);font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:6px;}
@@ -327,7 +328,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <div class="top-widget" id="speed-widget" style="display:none" onclick="cycleSpeed()">⏱ <span id="speed-label">وسط</span></div>
-<div class="top-widget" id="settings-widget" style="display:none" onclick="showScreen('s-settings')">⚙️</div>
+<div class="top-widget" id="settings-widget" style="display:none" onclick="openSettings()">⚙️</div>
 
 <!-- ONBOARDING (first launch only: name + language, then a guided tutorial round) -->
 <div class="screen" id="s-onboard">
@@ -384,7 +385,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <button class="menu-btn-sm" id="btn-howto" onclick="showScreen('s-howto')">❓ طريقة اللعب</button>
     <button class="menu-btn-sm" id="btn-achieve" onclick="openAchievements()" data-i18n="achievementsBtnLbl">🏆 الإنجازات</button>
     <button class="menu-btn-sm" onclick="openStats()" data-i18n="statsBtnLbl">📊 إحصائياتي</button>
-    <button class="menu-btn-sm" id="btn-settings" onclick="showScreen('s-settings')">⚙️ الإعدادات</button>
+    <button class="menu-btn-sm" id="btn-settings" onclick="openSettings()">⚙️ الإعدادات</button>
   </div>
 </div>
 
@@ -578,13 +579,14 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="win-xp" id="win-xp" style="display:none"></div>
     <div class="lose-list" id="lose-list"></div>
     <button class="play-again-btn" id="t-play-again" onclick="onWinPrimary()">العب مرة أخرى 🎱</button>
+    <button class="win-secondary-btn" id="win-rearrange-btn" style="display:none" onclick="netGuestRearrange()">🔀 إعادة ترتيب شبكتي</button>
     <button class="win-secondary-btn" id="win-secondary-btn" style="display:none" onclick="showScreen('s-welcome')" data-i18n="mainMenuBtn">القائمة الرئيسية</button>
   </div>
 </div>
 
 <!-- SETTINGS -->
 <div class="screen" id="s-settings">
-  <button class="back-btn" id="t-back-settings" onclick="showScreen('s-welcome')">→ رجوع</button>
+  <button class="back-btn" id="t-back-settings" onclick="showScreen(settingsReturnScreen)">→ رجوع</button>
   <div class="section-title" id="t-settings-title">الإعدادات</div>
 
   <div class="set-card">
@@ -1451,10 +1453,19 @@ function showScreen(id,fromNav){
 }
 // زر الرجوع: بدل ما يعتمد على تاريخ تراكمي (كان بيرجعك لشاشات لعبات سابقة قديمة)،
 // بيحسب دايماً وين المفروض يرجع بناءً على الوضع الحالي فعلياً — رجوع منطقي مو رجوع تاريخي.
+let settingsReturnScreen='s-welcome';
+function openSettings(){
+  const activeEl=document.querySelector('.screen.active');
+  const id=activeEl?activeEl.id:'s-welcome';
+  if(id!=='s-settings')settingsReturnScreen=id;
+  showScreen('s-settings');
+}
 function getBackTarget(){
   const activeEl=document.querySelector('.screen.active');
   const id=activeEl?activeEl.id:'s-welcome';
   switch(id){
+    case 's-settings':
+      return settingsReturnScreen;
     case 's-game':
       if(dailyMode||tournament)return 's-welcome';
       if(netMode)return netRole==='host'?'s-host':(netRole==='join'?'s-join':'s-connect');
@@ -1463,6 +1474,7 @@ function getBackTarget(){
       return 's-welcome';
     case 's-arrange':
       if(netArrangeContext==='host-lobby')return 's-host';
+      if(netArrangeContext==='guest-rematch')return 's-win';
       if(netArrangeContext==='guest'||netArrangeContext==='guest-inroom')return 's-join';
       return 's-setup';
     case 's-host': case 's-join':
@@ -1672,6 +1684,12 @@ function confirmArrange(){
     if(wtt)wtt.textContent='رتّبت شبكتك ✅';
     const wi=document.getElementById('join-waiting-icon');if(wi)wi.textContent='🙈';
     showScreen('s-join');
+    return;
+  }
+  if(netArrangeContext==='guest-rematch'){
+    netArrangeContext=null;
+    netGuestReadyForRematch([...arrangeSelected]);
+    showScreen('s-win');
     return;
   }
   players[arrangingIdx].grid=[...arrangeSelected];
@@ -1899,6 +1917,7 @@ function aiExpert(p,avail){
 let lastWinnerWasHuman=false, lastLevelStars=0, lastXPGain=0;
 let lastGameWinnerIdx=0; // لتحديد مين يبلش الجولة الجاية بإعادة اللعب الشبكي (الفائز، مو صاحب نقطة الاتصال دايماً)
 function endGame(winnerIndices){
+  const rbReset=document.getElementById('win-rearrange-btn');if(rbReset)rbReset.style.display='none';
   gameOver=true;inputLocked=true;
   document.querySelectorAll('.gcell.tutorial-hint').forEach(c=>c.classList.remove('tutorial-hint'));
   const wi=winnerIndices[0];
@@ -2019,15 +2038,15 @@ function endGame(winnerIndices){
 }
 function onWinPrimary(){
   if(netMode&&netRole==='host'){
-    players.forEach(p=>{p.scratched=new Set();p.bingoCount=0;p.winLines=[];});
-    currentIdx=lastGameWinnerIdx;totalTurns=0;gameOver=false;
-    broadcastState(true);
-    if(currentIdx===0){renderGame();}else{renderGameForHuman();}
-    if(players[currentIdx].isAI){setTimeout(doAITurn,delay(1000));}
+    players[0].scratched=new Set();players[0].bingoCount=0;players[0].winLines=[];
+    hostReadyForRematch=true;
+    const btn=document.getElementById('t-play-again');
+    if(btn){btn.disabled=true;btn.textContent='بانتظار باقي اللاعبين...';}
+    checkAllRematchReadyThenStart();
     return;
   }
   if(netMode&&netRole==='join'){
-    showToast(T('waitingHostRematchMsg'));
+    netGuestReadyForRematch();
     return;
   }
   if(currentLevel && lastWinnerWasHuman && lastLevelStars>0 && currentLevel.index<100){
@@ -2037,6 +2056,20 @@ function onWinPrimary(){
   } else {
     showScreen('s-welcome');
   }
+}
+function netGuestRearrange(){
+  netArrangeContext='guest-rematch';
+  arrangeSelected=[];
+  const nameV=playerName||T('pLabel');
+  document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
+  renderPool();renderAGrid();
+  document.getElementById('arr-confirm-btn').disabled=true;
+  showScreen('s-arrange');
+}
+function netGuestReadyForRematch(grid){
+  if(joinConn&&joinConn.dc)joinConn.dc.send(JSON.stringify({type:'rematchReady',grid:grid||null}));
+  const btn=document.getElementById('t-play-again');if(btn){btn.disabled=true;btn.textContent='بانتظار باقي اللاعبين...';}
+  const rb=document.getElementById('win-rearrange-btn');if(rb)rb.disabled=true;
 }
 function leaveNetworkRoom(){cancelNetwork();showScreen('s-welcome');}
 
@@ -2210,6 +2243,7 @@ if(window.AndroidBridge){
 
 function cancelNetwork(){
   netMode=false;netRole=null;myJoinIndex=null;netArrangeContext=null;pendingGuestGrid=null;pendingOfferSdp=null;
+  rematchReadySet=new Set();hostReadyForRematch=false;pendingArrangeFromGuests=0;
   hostConns.forEach(c=>{try{if(c.pc)c.pc.close();}catch(e){}});hostConns=[];
   if(joinConn){try{if(joinConn.pc)joinConn.pc.close();}catch(e){}joinConn=null;}
   if(window.AndroidBridge){try{AndroidBridge.closeNetwork();}catch(e){}window.__nativeHostStarted=false;}
@@ -2376,6 +2410,15 @@ function hostOnMessage(connEntry,raw){
     if(connEntry.idx!=null&&players[connEntry.idx]){players[connEntry.idx].grid=msg.grid;}
     pendingArrangeFromGuests=Math.max(0,pendingArrangeFromGuests-1);
     checkAllArrangedThenStart();
+  } else if(msg.type==='rematchReady'){
+    if(connEntry.idx!=null&&players[connEntry.idx]){
+      if(msg.grid)players[connEntry.idx].grid=msg.grid;
+      players[connEntry.idx].scratched=new Set();
+      players[connEntry.idx].bingoCount=0;
+      players[connEntry.idx].winLines=[];
+      rematchReadySet.add(connEntry.idx);
+    }
+    checkAllRematchReadyThenStart();
   } else if(msg.type==='emoji'){
     hostConns.forEach(c=>{if(c!==connEntry&&c.dc&&c.dc.readyState==='open')c.dc.send(raw);});
     showEmojiBubble(msg.emoji,msg.from);
@@ -2402,6 +2445,19 @@ function checkAllArrangedThenStart(){
   unlockAchievement('net_player');
   broadcastState(true);
   renderGame();
+}
+let rematchReadySet=new Set(), hostReadyForRematch=false;
+function checkAllRematchReadyThenStart(){
+  if(!hostReadyForRematch)return;
+  const neededIdxs=hostConns.map(c=>c.idx).filter(i=>i!=null);
+  if(!neededIdxs.every(i=>rematchReadySet.has(i)))return;
+  hostReadyForRematch=false;rematchReadySet=new Set();
+  const btn=document.getElementById('t-play-again');if(btn)btn.disabled=false;
+  currentIdx=lastGameWinnerIdx;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
+  unlockAchievement('net_player');
+  broadcastState(true);
+  if(currentIdx===0){renderGame();}else{renderGameForHuman();}
+  if(players[currentIdx].isAI){setTimeout(doAITurn,delay(1000));}
 }
 function broadcastState(starting){
   const payload=JSON.stringify({type:'state',starting:!!starting,
@@ -2558,8 +2614,12 @@ function netClientShowWin(winnerIndices){
   document.getElementById('win-secondary-btn').style.display='inline-block';
   document.getElementById('win-secondary-btn').textContent=T('leaveRoomBtn');
   document.getElementById('win-secondary-btn').onclick=leaveNetworkRoom;
-  document.getElementById('t-play-again').textContent=T('waitingHostRematchBtn');
-  document.getElementById('t-play-again').onclick=onWinPrimary;
+  const rb=document.getElementById('win-rearrange-btn');
+  if(rb){rb.style.display='inline-block';rb.disabled=false;}
+  const btn=document.getElementById('t-play-again');
+  btn.disabled=false;
+  btn.textContent='🔄 جولة جديدة';
+  btn.onclick=onWinPrimary;
   showScreen('s-win');startConfetti();
 }
 
