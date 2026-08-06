@@ -472,7 +472,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   <div class="setup-card net-section">
     <div class="setup-label"><span data-i18n="joinedPlayersLabel">اللاعبون المنضمّون (</span><span id="host-count">1</span>/6)</div>
     <div id="host-player-list" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
-    <button class="start-btn" id="host-add-btn" onclick="hostAddPlayer()" data-i18n="addPlayerBtn">➕ إضافة لاعب جديد</button>
+    <button class="start-btn" id="host-add-btn" onclick="hostAddPlayer()" data-i18n="addPlayerBtn">🌐 بدء الاستضافة</button>
     <button class="win-secondary-btn" style="width:100%;margin-top:8px" id="host-add-ai-btn" onclick="hostAddAiBot()">🤖 إضافة لاعب ذكاء اصطناعي</button>
   </div>
   <div id="host-qr-area" class="net-section" style="display:none">
@@ -484,9 +484,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <button class="start-btn" onclick="hostPasteAnswer()" data-i18n="connectCodeBtn">ربط عبر الرمز</button>
     </div>
     <div class="host-native-only" style="flex-direction:column;align-items:center;gap:12px;width:100%;">
-      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">هاد عنوان جهازك — عطيه لصاحبك يكتبه بشاشة "الانضمام للعبة" عندو</div>
+      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">1️⃣ عطي هاد العنوان لصحابك، وخليهن يكتبوه بشاشة "الانضمام للعبة" عندهن</div>
       <div id="host-ip-display" class="ip-display-box">—</div>
-      <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">بمجرد ما يتصل، رح يبين اسمه فوق تلقائياً — نفس العنوان صالح لأكثر من صاحب</div>
+      <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">2️⃣ بمجرد ما يتصلوا، بيبينوا فوق تلقائياً — نفس العنوان صالح لأكثر من صاحب بنفس الوقت</div>
+      <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">3️⃣ ناقص أشخاص؟ ضيف لاعب ذكاء اصطناعي بالزر تحت</div>
+      <div class="setup-label" style="font-size:.85rem;color:var(--gold);text-align:center;font-weight:700">4️⃣ لما يخلص الكل، دوس "بدء اللعبة" تحت — بترتب الكل شبكته وقتها</div>
     </div>
     <button class="win-secondary-btn" style="width:100%" onclick="document.getElementById('host-qr-area').style.display='none';document.getElementById('host-add-btn').style.display='block';" data-i18n="cancelBtn">إلغاء</button>
   </div>
@@ -503,7 +505,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <div class="setup-label" style="font-weight:900;font-size:1rem;margin-top:8px" data-i18n="joinSimpleStep1b">٢. الصق الرمز هون واضغط اتصال</div>
     </div>
     <div class="join-native-only" style="flex-direction:column;gap:8px;width:100%;">
-      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">اسأل صاحبك شو عنوان الـ IP الظاهر عنده بشاشة الاستضافة، واكتبه بالخانة تحت بالضبط زي ما هو</div>
+      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">1️⃣ اسأل صاحبك شو عنوان الـ IP الظاهر عنده بشاشة الاستضافة</div>
+      <div class="setup-label" style="font-weight:900;font-size:1rem;text-align:center">2️⃣ اكتبه بالخانة تحت بالضبط زي ما هو واضغط اتصال</div>
+      <div class="setup-label" style="font-size:.85rem;color:var(--muted);text-align:center">3️⃣ لما صاحبك يبدأ اللعبة، رح ترتب شبكتك تلقائياً وقتها</div>
     </div>
     <textarea class="code-textarea" id="join-offer-paste" rows="3"></textarea>
     <button class="start-btn" id="join-connect-btn" onclick="joinPasteOffer()" data-i18n="connectViaCode">اتصال عبر الرمز</button>
@@ -529,7 +533,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="setup-label" data-i18n="numParticipants">عدد المشاركين</div>
     <div class="row-btns">
       <button class="choice-btn" onclick="selectTournamentCount(4)" id="tcount-4">4</button>
+      <button class="choice-btn" onclick="selectTournamentCount(6)" id="tcount-6">6</button>
       <button class="choice-btn" onclick="selectTournamentCount(8)" id="tcount-8">8</button>
+      <button class="choice-btn" onclick="selectTournamentCount(10)" id="tcount-10">10</button>
     </div>
   </div>
   <div class="setup-card" style="width:100%;max-width:400px">
@@ -2119,14 +2125,25 @@ let tournament=null, tCount=4;
 function selectTournamentCount(n){
   tCount=n;
   document.getElementById('tcount-4').classList.toggle('selected',n===4);
+  document.getElementById('tcount-6').classList.toggle('selected',n===6);
   document.getElementById('tcount-8').classList.toggle('selected',n===8);
+  document.getElementById('tcount-10').classList.toggle('selected',n===10);
   const w=document.getElementById('tournament-names-wrap');w.innerHTML='';
   for(let i=1;i<=n;i++){
     const inp=document.createElement('input');inp.className='player-input';inp.placeholder=T('pLabel')+' '+i;inp.id='tname'+i;inp.maxLength=16;
     w.appendChild(inp);
   }
 }
-function pairUp(arr){const r=[];for(let i=0;i<arr.length;i+=2)r.push([arr[i],arr[i+1]]);return r;}
+function pairUp(arr){
+  const list=[...arr];
+  const r=[];
+  if(list.length%2===1){
+    const byePlayer=list.pop(); // يتأهل تلقائياً بدون ما يلعب هالجولة
+    r.push([byePlayer,null]);
+  }
+  for(let i=0;i<list.length;i+=2)r.push([list[i],list[i+1]]);
+  return r;
+}
 function startTournament(){
   const names=[];
   for(let i=1;i<=tCount;i++){
@@ -2144,13 +2161,25 @@ function renderTournamentBracket(){
   tournament.round.forEach((pair,i)=>{
     const d=document.createElement('div');d.className='net-player-item';
     const played=i<tournament.matchIndex;
-    d.textContent=pair[0]+' 🆚 '+pair[1]+(played?' — انتهت':'');
+    if(pair[1]===null){
+      d.textContent=pair[0]+(lang==='ar'?' — تأهل تلقائياً':' — auto-advances');
+    } else {
+      d.textContent=pair[0]+' 🆚 '+pair[1]+(played?' — انتهت':'');
+    }
     el.appendChild(d);
   });
 }
 function runNextTournamentMatch(){
   if(!tournament||tournament.matchIndex>=tournament.round.length)return;
   const pair=tournament.round[tournament.matchIndex];
+  if(pair[1]===null){
+    tournament.winners.push(pair[0]);
+    tournament.matchIndex++;
+    showToast((lang==='ar'?pair[0]+' تأهل تلقائياً (بدون منافس هالجولة)':pair[0]+' advances automatically (no opponent this round)'));
+    renderTournamentBracket();
+    runNextTournamentMatch();
+    return;
+  }
   dailyMode=false;currentLevel=null;mode='tournament';
   players=[mkPlayer(pair[0],false),mkPlayer(pair[1],false)];
   currentIdx=0;totalTurns=0;gameOver=false;arrangingIdx=0;
