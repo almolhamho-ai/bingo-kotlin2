@@ -29,12 +29,13 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:20px 16px;}
 .screen.active{display:flex;}
 
-.top-widget{position:fixed;top:12px;z-index:200;display:flex;align-items:center;gap:6px;
+.game-toolbar{width:100%;max-width:400px;display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:10px;}
+.top-widget{display:flex;align-items:center;gap:6px;
   background:rgba(8,8,18,.85);border:1px solid var(--border);border-radius:50px;padding:11px 16px;
-  backdrop-filter:blur(8px);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s;min-height:44px;box-sizing:border-box;}
+  backdrop-filter:blur(8px);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s;min-height:44px;box-sizing:border-box;
+  color:var(--gold);}
 .top-widget:active{transform:scale(.94);}
-#speed-widget{left:12px;top:64px;}
-#settings-widget{left:12px;color:var(--gold);font-size:1.2rem;}
+#settings-widget{font-size:1.2rem;padding:11px 14px;}
 
 #s-loading{justify-content:center;align-items:center;gap:0;background:var(--bg);position:relative;overflow:hidden;}
 .firework-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
@@ -328,6 +329,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:var(--muted);}
 .nts-bingo-track span.on{background:var(--gold);color:#1a1200;border-color:var(--gold);}
 .nts-scratch{font-size:.7rem;color:var(--muted);font-weight:700;}
+.nts-mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:100%;max-width:130px;margin-top:4px;}
+.nts-mini-cell{aspect-ratio:1;border-radius:4px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;color:var(--text);}
+.nts-mini-cell.marked{background:var(--marked);border-color:#3a3a5a;color:#4a4a6a;}
+.nts-mini-cell.win{border:1.4px solid var(--gold) !important;background:rgba(240,180,41,.3);color:var(--gold);}
 .nts-vs-badge{font-size:1.3rem;flex-shrink:0;}
 .nts-turn-indicator{font-size:.85rem;font-weight:700;color:var(--gold);text-align:center;}
 .nts-champion{display:flex;flex-direction:column;align-items:center;gap:10px;margin:20px 0;}
@@ -351,9 +357,6 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   </div>
   <button class="load-tap" id="t-tap-start" onclick="finishLoading()">ابدأ 🎉</button>
 </div>
-
-<div class="top-widget" id="speed-widget" style="display:none" onclick="cycleSpeed()">⏱ <span id="speed-label">وسط</span></div>
-<div class="top-widget" id="settings-widget" style="display:none" onclick="openSettings()">⚙️</div>
 
 <!-- ONBOARDING (first launch only: name + language, then a guided tutorial round) -->
 <div class="screen" id="s-onboard">
@@ -611,6 +614,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
         <div class="nts-name" id="nts-name-a">—</div>
         <div class="nts-bingo-track" id="nts-bingo-a"></div>
         <div class="nts-scratch" id="nts-scratch-a"></div>
+        <div class="nts-mini-grid" id="nts-grid-a"></div>
       </div>
       <div class="nts-vs-badge">⚡</div>
       <div class="nts-side" id="nts-side-b">
@@ -618,6 +622,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
         <div class="nts-name" id="nts-name-b">—</div>
         <div class="nts-bingo-track" id="nts-bingo-b"></div>
         <div class="nts-scratch" id="nts-scratch-b"></div>
+        <div class="nts-mini-grid" id="nts-grid-b"></div>
       </div>
     </div>
     <div class="nts-turn-indicator" id="nts-turn-indicator"></div>
@@ -632,6 +637,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- GAME -->
 <div class="screen" id="s-game">
+  <div class="game-toolbar">
+    <div class="top-widget" id="settings-widget" style="display:none" onclick="openSettings()">⚙️</div>
+    <div class="top-widget" id="speed-widget" style="display:none" onclick="cycleSpeed()">⏱ <span id="speed-label">وسط</span></div>
+  </div>
   <div class="game-header">
     <div class="current-player" id="cur-player-name">—</div>
     <div class="turn-indicator" id="turn-counter"></div>
@@ -1678,6 +1687,7 @@ function getBackTarget(){
       if(netArrangeContext==='host-lobby')return 's-host';
       if(netArrangeContext==='guest-rematch'||netArrangeContext==='host-rematch')return 's-win';
       if(netArrangeContext==='guest'||netArrangeContext==='guest-inroom')return 's-join';
+      if(arrangingForAIRematch)return 's-win';
       return 's-setup';
     case 's-host': case 's-join':
       return netTournamentActive?'s-net-tournament-size':'s-connect';
@@ -1866,6 +1876,7 @@ function pickNum(n){
 function removeAt(i){if(i>=arrangeSelected.length)return;arrangeSelected.splice(i,1);renderPool();renderAGrid();document.getElementById('arr-confirm-btn').disabled=true;}
 function randomArrange(){arrangeSelected=shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]);renderPool();renderAGrid();document.getElementById('arr-confirm-btn').disabled=false;}
 let netArrangeContext=null; // null | 'host-lobby' | 'guest' | 'guest-inroom'
+let arrangingForAIRematch=false; // true only while re-arranging for a fresh AI-freeplay round
 let pendingGuestGrid=null, pendingOfferSdp=null;
 let pendingArrangeFromGuests=0;
 function confirmArrange(){
@@ -1911,7 +1922,9 @@ function confirmArrange(){
     return;
   }
   players[arrangingIdx].grid=[...arrangeSelected];
-  arrangingIdx++;startArranging();
+  arrangingIdx++;
+  if(arrangingIdx>=players.length)arrangingForAIRematch=false;
+  startArranging();
 }
 
 // ══════════════════════════════════════════
@@ -2273,6 +2286,17 @@ function endGame(winnerIndices){
     secBtn.textContent=T('backToLevels');
     secBtn.onclick=()=>{showScreen('s-levels');renderLevels();};
     document.getElementById('t-play-again').textContent=T('playAgain');
+  } else if(mode==='ai'){
+    // Freeplay vs AI (no campaign level attached): give a real rematch — same opponents,
+    // fresh grids — alongside an explicit leave option, instead of a single mislabeled
+    // "play again" button that actually just dumped the player back to the main menu.
+    starsEl.style.display='none';
+    xpEl.style.display='block';
+    xpEl.textContent=T('xpEarned').replace('{n}',lastXPGain);
+    secBtn.style.display='inline-block';
+    secBtn.textContent=lang==='ar'?'مغادرة 🚪':'Leave 🚪';
+    secBtn.onclick=()=>showScreen('s-welcome');
+    document.getElementById('t-play-again').textContent=T('rematchBtn');
   } else {
     starsEl.style.display='none';
     xpEl.style.display='block';
@@ -2295,6 +2319,10 @@ function onWinPrimary(){
     netGuestReadyForRematch();
     return;
   }
+  if(mode==='ai'&&!currentLevel){
+    startAIRematchArrange();
+    return;
+  }
   if(currentLevel && lastWinnerWasHuman && lastLevelStars>0 && currentLevel.index<100){
     startLevel(currentLevel.index+1);
   } else if(currentLevel){
@@ -2302,6 +2330,15 @@ function onWinPrimary(){
   } else {
     showScreen('s-welcome');
   }
+}
+function startAIRematchArrange(){
+  const humanName=(players.find(p=>!p.isAI)||{}).name||playerName||T('pLabel')+' 1';
+  const aiOldNames=players.filter(p=>p.isAI).map(p=>p.name);
+  players=[mkPlayer(humanName,false)];
+  aiOldNames.forEach(n=>players.push(mkPlayer(n,true)));
+  currentIdx=0;totalTurns=0;gameOver=false;arrangingIdx=0;
+  arrangingForAIRematch=true;
+  startArranging();
 }
 function netGuestRearrange(){
   netArrangeContext='guest-rematch';
@@ -2841,6 +2878,12 @@ function checkAllRematchReadyThenStart(){
   if(!neededIdxs.every(i=>rematchReadySet.has(i)))return;
   hostReadyForRematch=false;rematchReadySet=new Set();
   const btn=document.getElementById('t-play-again');if(btn)btn.disabled=false;
+  // AI bots never send a 'rematchReady' message (they're purely local objects), so their
+  // scratched/bingoCount from the PREVIOUS round would otherwise carry straight into the
+  // new one — sometimes leaving them already sitting on 5 completed lines from a round
+  // they just won, which would end the new round on literally the first number called.
+  // Reset every AI player's marks here as the single source of truth for a fresh round.
+  players.forEach(p=>{ if(p.isAI){ p.scratched=new Set(); p.bingoCount=0; p.winLines=[]; } });
   currentIdx=lastGameWinnerIdx;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
   unlockAchievement('net_player');
   broadcastState(true);
@@ -2911,6 +2954,9 @@ function netTournamentLiveData(){
     names:[players[0].name,players[1].name],
     bingoCount:[players[0].bingoCount,players[1].bingoCount],
     scratchedCount:[players[0].scratched.size,players[1].scratched.size],
+    grids:[players[0].grid,players[1].grid],
+    scratched:[[...players[0].scratched],[...players[1].scratched]],
+    winLines:[players[0].winLines,players[1].winLines],
     currentIdx,totalTurns,gameOver};
 }
 function runNextNetMatch(){
@@ -3023,6 +3069,21 @@ function handleNetTournamentMatchEnd(winnerLocalIndices){
 function bingoLettersHtml(count){
   return BINGO.map((l,i)=>'<span'+(i<count?' class="on"':'')+'>'+l+'</span>').join('');
 }
+function renderNtsMiniGrid(elId,grid,scratchedArr,winLines){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  if(!grid||!grid.length){el.innerHTML='';return;}
+  const scratchedSet=new Set(scratchedArr||[]);
+  const winCells=new Set();
+  (winLines||[]).forEach(line=>line.forEach(i=>winCells.add(i)));
+  el.innerHTML='';
+  grid.forEach((num,i)=>{
+    const c=document.createElement('div');
+    c.className='nts-mini-cell'+(scratchedSet.has(num)?' marked':'')+(winCells.has(i)?' win':'');
+    c.textContent=num;
+    el.appendChild(c);
+  });
+}
 function renderNetTournamentSpectateClient(bracket,live){
   if(!bracket)return;
   if(bracket.champion){showNetTournamentChampionClient(bracket);return;}
@@ -3040,6 +3101,8 @@ function renderNetTournamentSpectateClient(bracket,live){
     document.getElementById('nts-bingo-b').innerHTML=bingoLettersHtml(live.bingoCount?live.bingoCount[1]:0);
     document.getElementById('nts-scratch-a').textContent=(live.scratchedCount?live.scratchedCount[0]:0)+' 🔢';
     document.getElementById('nts-scratch-b').textContent=(live.scratchedCount?live.scratchedCount[1]:0)+' 🔢';
+    renderNtsMiniGrid('nts-grid-a',live.grids&&live.grids[0],live.scratched&&live.scratched[0],live.winLines&&live.winLines[0]);
+    renderNtsMiniGrid('nts-grid-b',live.grids&&live.grids[1],live.scratched&&live.scratched[1],live.winLines&&live.winLines[1]);
     const turnIsA=live.currentIdx===0;
     const ti=document.getElementById('nts-turn-indicator');
     if(ti)ti.textContent=(lang==='ar'?'🎯 دور ':'🎯 Turn: ')+(turnIsA?nameA:nameB);
@@ -3048,6 +3111,8 @@ function renderNetTournamentSpectateClient(bracket,live){
     if(sb)sb.style.opacity=turnIsA?'.55':'1';
   } else if(spot){
     spot.style.display='none';
+    const ga=document.getElementById('nts-grid-a'),gb=document.getElementById('nts-grid-b');
+    if(ga)ga.innerHTML='';if(gb)gb.innerHTML='';
   }
   const listEl=document.getElementById('nts-bracket-list');
   if(!listEl)return;
