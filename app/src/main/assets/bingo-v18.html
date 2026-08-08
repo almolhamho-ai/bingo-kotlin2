@@ -142,10 +142,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .arrange-cell.filled{border-style:solid;border-color:var(--gold);background:rgba(240,180,41,.1);
   color:var(--text);animation:cellIn .28s cubic-bezier(.34,1.56,.64,1);}
 @keyframes cellIn{from{opacity:0;transform:scale(.6);}to{opacity:1;transform:scale(1);}}
-.arrange-actions{display:flex;gap:10px;width:100%;max-width:330px;}
-.arr-btn{flex:1;padding:12px;border-radius:12px;border:none;font-family:'Tajawal',sans-serif;
-  font-size:.95rem;font-weight:700;cursor:pointer;transition:all .15s;}
-.arr-random{background:var(--card);border:1px solid var(--border);color:var(--muted);}
+.arrange-actions{display:flex;gap:10px;width:100%;max-width:330px;margin-top:14px;}
+.arr-btn{flex:1;padding:14px 12px;min-height:52px;border-radius:12px;border:none;font-family:'Tajawal',sans-serif;
+  font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .15s;box-sizing:border-box;touch-action:manipulation;}
+.arr-random{background:var(--card);border:1px solid var(--border);color:var(--muted);font-size:1.3rem;}
 .arr-confirm{background:linear-gradient(135deg,var(--green),#0099a8);color:#fff;}
 .arr-confirm:disabled{background:var(--card);color:var(--muted);cursor:not-allowed;}
 
@@ -447,7 +447,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <!-- ARRANGE -->
-<div class="screen" id="s-arrange">
+<div class="screen" id="s-arrange" style="padding-bottom:36px;">
   <div class="section-title" id="arrange-title"></div>
   <div class="arrange-info" id="t-arrange-info"></div>
   <div class="number-pool" id="number-pool"></div>
@@ -668,6 +668,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <button class="play-again-btn" id="t-play-again" onclick="onWinPrimary()">العب مرة أخرى 🎱</button>
     <button class="win-secondary-btn" id="win-rearrange-btn" style="display:none" onclick="netGuestRearrange()">🔀 إعادة ترتيب شبكتي</button>
+    <button class="win-secondary-btn" id="host-rearrange-btn" style="display:none" onclick="hostRearrangeBeforeRematch()">🔀 إعادة ترتيب شبكتي</button>
     <button class="win-secondary-btn" id="win-secondary-btn" style="display:none" onclick="showScreen('s-welcome')" data-i18n="mainMenuBtn">القائمة الرئيسية</button>
   </div>
 </div>
@@ -1675,7 +1676,7 @@ function getBackTarget(){
       return 's-welcome';
     case 's-arrange':
       if(netArrangeContext==='host-lobby')return 's-host';
-      if(netArrangeContext==='guest-rematch')return 's-win';
+      if(netArrangeContext==='guest-rematch'||netArrangeContext==='host-rematch')return 's-win';
       if(netArrangeContext==='guest'||netArrangeContext==='guest-inroom')return 's-join';
       return 's-setup';
     case 's-host': case 's-join':
@@ -1898,6 +1899,17 @@ function confirmArrange(){
     showScreen('s-win');
     return;
   }
+  if(netArrangeContext==='host-rematch'){
+    netArrangeContext=null;
+    players[0].grid=[...arrangeSelected];
+    players[0].scratched=new Set();players[0].bingoCount=0;players[0].winLines=[];
+    hostReadyForRematch=true;
+    const btn=document.getElementById('t-play-again');
+    if(btn){btn.disabled=true;btn.textContent='بانتظار باقي اللاعبين...';}
+    showScreen('s-win');
+    checkAllRematchReadyThenStart();
+    return;
+  }
   players[arrangingIdx].grid=[...arrangeSelected];
   arrangingIdx++;startArranging();
 }
@@ -2040,7 +2052,10 @@ function nextTurn(){
       if(currentIdx===0){renderGame();}
       else{renderGameForHuman();}
     }
-    if(p.isAI){setTimeout(doAITurn,delay(1000));}
+    if(p.isAI){
+      if(netTournamentActive){const myToken=netMatchToken;setTimeout(()=>{if(myToken===netMatchToken)doAITurn();},delay(1000));}
+      else{setTimeout(doAITurn,delay(1000));}
+    }
     return;
   }
   if(p.isAI){
@@ -2092,20 +2107,28 @@ function doAITurn(){
   else if(difficulty==='medium')chosen=aiMedium(p,avail);
   else chosen=aiExpert(p,avail);
 
-  const humanP=players.find(pl=>!pl.isAI)||players[0];
-  const humanIdx=humanP.grid.indexOf(chosen);
-  const cells=document.querySelectorAll('.gcell');
-  if(cells[humanIdx]){
-    cells[humanIdx].style.borderColor='var(--red)';
-    cells[humanIdx].style.background='rgba(255,71,87,.18)';
-    cells[humanIdx].style.transform='scale(1.1)';
-    setTimeout(()=>{
-      if(cells[humanIdx]&&!humanP.scratched.has(chosen)){
-        cells[humanIdx].style.transform='';
-        cells[humanIdx].style.background='';
-        cells[humanIdx].style.borderColor='';
+  // Highlight the called number on the local human's own grid — only meaningful when a
+  // human is actually watching the s-game screen for THIS match. During a network
+  // tournament match the host is spectating (not playing), so skip touching '.gcell'
+  // entirely to avoid animating stale cells left over from a previous match's DOM.
+  if(!(netTournamentActive&&!hostInActiveMatch())){
+    const humanP=players.find(pl=>!pl.isAI);
+    if(humanP){
+      const humanIdx=humanP.grid.indexOf(chosen);
+      const cells=document.querySelectorAll('.gcell');
+      if(cells[humanIdx]){
+        cells[humanIdx].style.borderColor='var(--red)';
+        cells[humanIdx].style.background='rgba(255,71,87,.18)';
+        cells[humanIdx].style.transform='scale(1.1)';
+        setTimeout(()=>{
+          if(cells[humanIdx]&&!humanP.scratched.has(chosen)){
+            cells[humanIdx].style.transform='';
+            cells[humanIdx].style.background='';
+            cells[humanIdx].style.borderColor='';
+          }
+        },delay(380));
       }
-    },delay(380));
+    }
   }
   setTimeout(()=>{
     doScratch(currentIdx,chosen);
@@ -2136,6 +2159,7 @@ let lastGameWinnerIdx=0; // لتحديد مين يبلش الجولة الجاي
 function endGame(winnerIndices){
   const rbReset=document.getElementById('win-rearrange-btn');if(rbReset)rbReset.style.display='none';
   const wbmReset=document.getElementById('win-bot-manage');if(wbmReset)wbmReset.style.display='none';
+  const hrbReset=document.getElementById('host-rearrange-btn');if(hrbReset)hrbReset.style.display='none';
   gameOver=true;inputLocked=true;
   document.querySelectorAll('.gcell.tutorial-hint').forEach(c=>c.classList.remove('tutorial-hint'));
   const wi=winnerIndices[0];
@@ -2215,6 +2239,7 @@ function endGame(winnerIndices){
     secBtn.onclick=leaveNetworkRoom;
     document.getElementById('t-play-again').textContent=T('rematchBtn');
     const wbm=document.getElementById('win-bot-manage');if(wbm)wbm.style.display='flex';
+    const hrb=document.getElementById('host-rearrange-btn');if(hrb)hrb.style.display='inline-block';
     renderWinBotManage();
   } else if(currentLevel && lastWinnerWasHuman){
     let stars=1;
@@ -2280,6 +2305,15 @@ function onWinPrimary(){
 }
 function netGuestRearrange(){
   netArrangeContext='guest-rematch';
+  arrangeSelected=[];
+  const nameV=playerName||T('pLabel');
+  document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
+  renderPool();renderAGrid();
+  document.getElementById('arr-confirm-btn').disabled=true;
+  showScreen('s-arrange');
+}
+function hostRearrangeBeforeRematch(){
+  netArrangeContext='host-rematch';
   arrangeSelected=[];
   const nameV=playerName||T('pLabel');
   document.getElementById('arrange-title').textContent=nameV+'، '+T('arrangeTitle');
@@ -2908,6 +2942,10 @@ function runNextNetMatch(){
   }
   startNetMatch(pair[0],pair[1]);
 }
+let netMatchToken=0; // bumped every time a new tournament match starts, so any stale AI
+                      // turn timeout left over from a match that already ended (edge case
+                      // around fast speed settings / rapid match transitions) can detect
+                      // it's stale and silently no-op instead of acting on the wrong match.
 function startNetMatch(rIdxA,rIdxB){
   const nt=netTournament;
   if(nt.roster[rIdxA].disconnected){netTournamentAutoForfeitPreMatch(rIdxA,rIdxB);return;}
@@ -2922,11 +2960,13 @@ function startNetMatch(rIdxA,rIdxB){
   const rA=nt.roster[a], rB=nt.roster[b];
   players=[mkPlayer(rA.name,rA.isAI,rA.grid),mkPlayer(rB.name,rB.isAI,rB.grid)];
   currentIdx=0;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
+  netMatchToken++;
+  const myToken=netMatchToken;
   broadcastTournamentBracket();
   broadcastState(true);
   if(connA==='host'){renderGame();}
   else{showScreen('s-tournament-spectate');renderNetTournamentSpectate();}
-  if(players[currentIdx].isAI)setTimeout(doAITurn,delay(1000));
+  if(players[currentIdx].isAI)setTimeout(()=>{if(myToken===netMatchToken)doAITurn();},delay(1000));
 }
 function netTournamentAutoForfeitPreMatch(missingRosterIdx,opponentRosterIdx){
   const nt=netTournament;
@@ -2949,11 +2989,15 @@ function handleNetTournamentMatchEnd(winnerLocalIndices){
   const localWinnerIdx=winnerLocalIndices[0];
   const winnerRosterIdx=nt.activePair[localWinnerIdx];
   const winnerName=nt.roster[winnerRosterIdx].name;
-  playSound('win');
-  if(navigator.vibrate)navigator.vibrate([90,50,90,50,220]);
+  const rc=nt.rosterConn;
+  // Only celebrate loudly (confetti/win-sound/strong vibration) when the HOST'S own match
+  // just ended — a match the host was merely spectating (e.g. two AI bots) should update
+  // the bracket quietly, otherwise every background match feels like another personal loss.
+  const hostRosterIdx=nt.activePair.find(ri=>rc[ri]==='host');
+  const hostWasInMatch=hostRosterIdx!==undefined;
+  const hostWon=hostWasInMatch&&hostRosterIdx===winnerRosterIdx;
   nt.roster[nt.activePair[0]].grid=players[0].grid;
   nt.roster[nt.activePair[1]].grid=players[1].grid;
-  const rc=nt.rosterConn;
   [0,1].forEach(li=>{
     const conn=rc[nt.activePair[li]];
     if(conn&&conn!=='host'&&conn.dc&&conn.dc.readyState==='open'){
@@ -2963,10 +3007,16 @@ function handleNetTournamentMatchEnd(winnerLocalIndices){
   nt.winners.push(winnerRosterIdx);
   nt.matchIndex++;
   nt.activePair=null;
-  showToast(winnerName+(lang==='ar'?' فاز بالمباراة! 🏆':' won the match! 🏆'));
   gameOver=true;
+  if(hostWasInMatch){
+    playSound(hostWon?'win':'lose');
+    if(navigator.vibrate)navigator.vibrate(hostWon?[90,50,90,50,220]:[120]);
+    showToast(hostWon?(lang==='ar'?'فزت بالمباراة! 🏆':'You won the match! 🏆'):(lang==='ar'?winnerName+' فاز عليك':winnerName+' beat you'));
+    if(hostWon)startConfetti();
+  } else {
+    showToast(winnerName+(lang==='ar'?' فاز بالمباراة':' won the match'));
+  }
   showScreen('s-tournament-spectate');
-  startConfetti();
   broadcastTournamentBracket();
   setTimeout(runNextNetMatch,1800); // brief pause so the win moment registers before the next match starts
 }
