@@ -111,8 +111,12 @@ class MainActivity : AppCompatActivity() {
                         line = reader.readLine() ?: break
                         evalJs("window.onNetMessageFromHost && window.onNetMessageFromHost('${encode(line)}');")
                     }
+                    // Host closed the connection cleanly (readLine returned null) — let the JS
+                    // layer know so it can show reconnect UI / retry during a network tournament.
+                    evalJs("window.onNetHostDisconnected && window.onNetHostDisconnected();")
                 } catch (e: Exception) {
                     evalJs("window.onNetError && window.onNetError('joinHost');")
+                    evalJs("window.onNetHostDisconnected && window.onNetHostDisconnected();")
                 }
             }.start()
         }
