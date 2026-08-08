@@ -33,8 +33,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   background:rgba(8,8,18,.85);border:1px solid var(--border);border-radius:50px;padding:11px 16px;
   backdrop-filter:blur(8px);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s;min-height:44px;box-sizing:border-box;}
 .top-widget:active{transform:scale(.94);}
-#speed-widget{left:12px;}
-#settings-widget{right:12px;color:var(--gold);font-size:1.2rem;}
+#speed-widget{left:12px;top:64px;}
+#settings-widget{left:12px;color:var(--gold);font-size:1.2rem;}
 
 #s-loading{justify-content:center;align-items:center;gap:0;background:var(--bg);position:relative;overflow:hidden;}
 .firework-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
@@ -130,9 +130,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 #s-arrange{gap:14px;padding-top:70px;}
 .arrange-info{text-align:center;color:var(--muted);font-size:.9rem;line-height:1.5;}
 .number-pool{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:360px;}
-.pool-num{width:50px;height:50px;border-radius:10px;background:var(--card);border:2px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;
-  cursor:pointer;transition:all .2s;}
+.pool-num{width:58px;height:58px;min-width:58px;min-height:58px;border-radius:12px;background:var(--card);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:700;
+  cursor:pointer;transition:all .2s;box-sizing:border-box;}
 .pool-num:hover{border-color:var(--gold);transform:scale(1.08);}
 .pool-num.used{opacity:.15;pointer-events:none;transition:opacity .3s,transform .3s;transform:scale(.88);}
 .arrange-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:330px;width:100%;}
@@ -291,6 +291,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   background:var(--card);border:1px solid var(--border);padding:12px 24px;border-radius:50px;
   font-size:.95rem;font-weight:700;color:var(--text);opacity:0;transition:all .3s;z-index:999;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#net-reconnect-banner{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--red);color:#fff;
+  text-align:center;padding:8px 12px;font-size:.85rem;font-weight:800;display:none;}
 
 .credit{position:fixed;bottom:10px;left:14px;font-size:.95rem;font-weight:800;letter-spacing:.8px;
   background:linear-gradient(90deg,#8a6a1f 0%,#c99a3a 25%,#f0d896 45%,#c99a3a 65%,#8a6a1f 100%);
@@ -307,6 +309,29 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:900;color:#1a1000;cursor:pointer;}
 
 .net-player-item{padding:8px 12px;background:var(--surface);border-radius:8px;font-weight:700;font-size:.9rem;}
+.net-player-item-row{padding:6px 8px 6px 12px;background:var(--surface);border-radius:8px;font-weight:700;font-size:.9rem;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.bot-remove-btn{background:none;border:1px solid var(--border);color:var(--red);border-radius:8px;
+  min-width:32px;min-height:32px;font-size:1rem;font-weight:900;cursor:pointer;flex-shrink:0;}
+.bot-remove-btn:active{transform:scale(.92);}
+#win-bot-manage{width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;margin:10px 0;}
+#win-bot-manage .setup-label{align-self:flex-start;}
+.nts-spotlight{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px 0 16px;}
+.nts-vs-card{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:linear-gradient(135deg,var(--card),var(--surface));border:1px solid var(--border);border-radius:18px;
+  padding:16px 10px;box-shadow:0 6px 20px rgba(0,0,0,.15);}
+.nts-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
+.nts-avatar{font-size:1.8rem;}
+.nts-name{font-weight:900;font-size:.95rem;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nts-bingo-track{display:flex;gap:3px;}
+.nts-bingo-track span{width:20px;height:20px;border-radius:6px;background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:var(--muted);}
+.nts-bingo-track span.on{background:var(--gold);color:#1a1200;border-color:var(--gold);}
+.nts-scratch{font-size:.7rem;color:var(--muted);font-weight:700;}
+.nts-vs-badge{font-size:1.3rem;flex-shrink:0;}
+.nts-turn-indicator{font-size:.85rem;font-weight:700;color:var(--gold);text-align:center;}
+.nts-champion{display:flex;flex-direction:column;align-items:center;gap:10px;margin:20px 0;}
+.nts-champion-name{font-size:1.4rem;font-weight:900;}
 #s-connect video,#s-host video,#s-join video{width:100%;max-width:320px;border-radius:12px;margin-top:8px;}
 .code-textarea{width:100%;max-width:360px;background:var(--surface);color:var(--text);border:1px solid var(--border);
   border-radius:10px;padding:8px;font-size:.68rem;direction:ltr;resize:none;font-family:monospace;}
@@ -375,6 +400,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <button class="menu-card card-tournament" onclick="showScreen('s-tournament-setup')">
       <span class="mc-icon">🏆</span>
       <span class="mc-text"><b data-i18n="tournamentTitle">بطولة الأصدقاء</b><small data-i18n="tournamentSub">4 أو 8 لاعبين، إقصاء مباشر</small></span>
+    </button>
+    <button class="menu-card card-net" onclick="showScreen('s-net-tournament-size');selectNetTournamentSize(netTournamentSize||4)">
+      <span class="mc-icon">🌐🏆</span>
+      <span class="mc-text"><b data-i18n="netTournamentTitle">بطولة شبكية</b><small data-i18n="netTournamentSub">عدة أجهزة، إقصاء مباشر</small></span>
     </button>
     <button class="menu-card card-levels" id="btn-levels-mode" onclick="openLevels()">
       <span class="mc-icon">🎯</span>
@@ -467,10 +496,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- HOST SCREEN -->
 <div class="screen" id="s-host">
-  <button class="back-btn" data-i18n="back" onclick="cancelNetwork();showScreen('s-connect')">→ رجوع</button>
+  <button class="back-btn" data-i18n="back" onclick="cancelNetwork();showScreen(netTournamentActive?'s-net-tournament-size':'s-connect')">→ رجوع</button>
   <div class="section-title" data-i18n="hostGameBtn">استضافة اللعبة</div>
+  <div class="section-title" id="host-tournament-badge" style="display:none;font-size:.95rem;color:var(--gold);margin-top:-10px;">🏆 بطولة شبكية</div>
   <div class="setup-card net-section">
-    <div class="setup-label"><span data-i18n="joinedPlayersLabel">اللاعبون المنضمّون (</span><span id="host-count">1</span>/6)</div>
+    <div class="setup-label"><span data-i18n="joinedPlayersLabel">اللاعبون المنضمّون (</span><span id="host-count">1</span>/<span id="host-cap">6</span>)</div>
     <div id="host-player-list" style="display:flex;flex-direction:column;gap:6px;width:100%;"></div>
     <button class="start-btn" id="host-add-btn" onclick="hostAddPlayer()" data-i18n="addPlayerBtn">🌐 بدء الاستضافة</button>
     <button class="win-secondary-btn" style="width:100%;margin-top:8px" id="host-add-ai-btn" onclick="hostAddAiBot()">🤖 إضافة لاعب ذكاء اصطناعي</button>
@@ -553,6 +583,53 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   <button class="start-btn" onclick="runNextTournamentMatch()" data-i18n="nextMatchBtn">ابدأ المباراة التالية ▶</button>
 </div>
 
+<!-- NET TOURNAMENT SIZE PICKER -->
+<div class="screen" id="s-net-tournament-size">
+  <button class="back-btn" data-i18n="back" onclick="showScreen('s-welcome')">→ رجوع</button>
+  <div class="section-title" data-i18n="netTournamentTitle">بطولة شبكية</div>
+  <div class="setup-card" style="width:100%;max-width:400px">
+    <div class="setup-label" data-i18n="numParticipants">عدد المشاركين</div>
+    <div class="row-btns">
+      <button class="choice-btn" onclick="selectNetTournamentSize(4)" id="ntcount-4">4</button>
+      <button class="choice-btn" onclick="selectNetTournamentSize(6)" id="ntcount-6">6</button>
+      <button class="choice-btn" onclick="selectNetTournamentSize(8)" id="ntcount-8">8</button>
+      <button class="choice-btn" onclick="selectNetTournamentSize(10)" id="ntcount-10">10</button>
+    </div>
+    <div class="setup-label" style="font-size:.8rem;color:var(--muted);margin-top:10px;" id="net-tournament-size-hint"></div>
+  </div>
+  <button class="start-btn" onclick="startNetTournamentHostFlow()" data-i18n="hostGameBtn">استضافة اللعبة</button>
+</div>
+
+<!-- NET TOURNAMENT SPECTATE / BRACKET -->
+<div class="screen" id="s-tournament-spectate">
+  <button class="back-btn" onclick="leaveNetTournament()">🚪 <span id="nts-leave-lbl">مغادرة</span></button>
+  <div class="section-title" id="nts-round-title">الجولة 1</div>
+  <div id="nts-spotlight" class="nts-spotlight" style="display:none">
+    <div class="nts-vs-card">
+      <div class="nts-side" id="nts-side-a">
+        <div class="nts-avatar">🎱</div>
+        <div class="nts-name" id="nts-name-a">—</div>
+        <div class="nts-bingo-track" id="nts-bingo-a"></div>
+        <div class="nts-scratch" id="nts-scratch-a"></div>
+      </div>
+      <div class="nts-vs-badge">⚡</div>
+      <div class="nts-side" id="nts-side-b">
+        <div class="nts-avatar">🎱</div>
+        <div class="nts-name" id="nts-name-b">—</div>
+        <div class="nts-bingo-track" id="nts-bingo-b"></div>
+        <div class="nts-scratch" id="nts-scratch-b"></div>
+      </div>
+    </div>
+    <div class="nts-turn-indicator" id="nts-turn-indicator"></div>
+  </div>
+  <div id="nts-champion" class="nts-champion" style="display:none">
+    <div style="font-size:3.5rem">🏆</div>
+    <div class="nts-champion-name" id="nts-champion-name"></div>
+  </div>
+  <div class="setup-label" style="align-self:flex-start;margin-top:12px" id="nts-bracket-label">قائمة المباريات</div>
+  <div id="nts-bracket-list" style="display:flex;flex-direction:column;gap:6px;width:100%;max-width:400px;"></div>
+</div>
+
 <!-- GAME -->
 <div class="screen" id="s-game">
   <div class="game-header">
@@ -584,6 +661,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="win-stars" id="win-stars" style="display:none"></div>
     <div class="win-xp" id="win-xp" style="display:none"></div>
     <div class="lose-list" id="lose-list"></div>
+    <div id="win-bot-manage" style="display:none">
+      <div class="setup-label" data-i18n="aiNamesLabel">أسماء لاعبي الهاتف (اختياري)</div>
+      <div id="win-bot-list"></div>
+      <button class="win-secondary-btn" style="width:100%" id="win-add-ai-btn" onclick="hostAddAiBotBetweenRounds()">🤖 إضافة لاعب ذكاء اصطناعي</button>
+    </div>
     <button class="play-again-btn" id="t-play-again" onclick="onWinPrimary()">العب مرة أخرى 🎱</button>
     <button class="win-secondary-btn" id="win-rearrange-btn" style="display:none" onclick="netGuestRearrange()">🔀 إعادة ترتيب شبكتي</button>
     <button class="win-secondary-btn" id="win-secondary-btn" style="display:none" onclick="showScreen('s-welcome')" data-i18n="mainMenuBtn">القائمة الرئيسية</button>
@@ -680,6 +762,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="net-reconnect-banner">🔌 انقطع الاتصال، عم نحاول نرجع نتصل...</div>
 <div class="credit">CREATED BY ALMOLHAM OMRAN</div>
 
 <script>
@@ -721,6 +804,7 @@ const LANGS={
     customTheme:'🎨 مخصص',pickColor1:'اللون الأساسي',pickColor2:'اللون الثانوي',
     levelsSubTxt:'100 مستوى مليء بالتحدي',
     tournamentSub:'4 أو 8 لاعبين، إقصاء مباشر',
+    netTournamentTitle:'بطولة شبكية',netTournamentSub:'عدة أجهزة، إقصاء مباشر',
     netCardSub:'أجهزة متعددة (بدون إنترنت)',
     participantNames:'أسماء المشاركين',
     youAreHost:'أنت صاحب نقطة الاتصال',
@@ -823,6 +907,7 @@ const LANGS={
     customTheme:'🎨 Custom',pickColor1:'Primary color',pickColor2:'Secondary color',
     levelsSubTxt:'100 challenging levels',
     tournamentSub:'4 or 8 players, single elimination',
+    netTournamentTitle:'Network Tournament',netTournamentSub:'Multiple devices, single elimination',
     netCardSub:'Multiple devices, no internet',
     participantNames:'Participant Names',
     youAreHost:'You are the host',
@@ -906,7 +991,43 @@ const LANGS={
     arrangeTitle:'Arrangez votre grille',revealBtn:'Je suis {name} — Prêt',
     hideTitle:'Écran Caché',hideSub:'Passez le téléphone à {name}',
     bingoLetter:'🎉 {L}! — {name}',completeGrid:'Complétez la grille d\'abord',
-    aiLabel:'🤖 Téléphone'
+    aiLabel:'🤖 Téléphone',
+    achievementsBtnLbl:'🏆 Succès',achievementsLabel:'Succès',addPlayerBtn:'➕ Ajouter un joueur',
+    aiNamesLabel:'Noms des joueurs IA (optionnel)',aiSub:'Défie l\'IA',avatarLabel:'🙂 Avatar',
+    avatarPickedMsg:'Avatar sélectionné ',backToLevels:'Retour aux niveaux',cancelBtn:'Annuler',
+    clipboardEmptyMsg:'Aucun code copié -- demande d\'abord à ton ami de te l\'envoyer, ou utilise "Autre méthode"',codeCopiedMsg:'Code copié',connectCodeBtn:'Se connecter via Code',
+    connectViaCode:'Connexion via Code',connectedToHotspot:'Ton appareil est connecté au point d\'accès de ton ami',connectedWaitingHostMsg:'✅ Connexion réussie ! En attente de l\'hôte pour commencer...',
+    connectionCreateErrorMsg:'Erreur lors de la création de la connexion, réessaie',connectionFailedMsg:'Impossible de terminer la connexion, réessaie',connectionHowtoBtnLbl:'❓ Comment se connecter',
+    connectionHowtoTitle:'Comment se connecter',copyCodeBtnLbl:'📋 Copier le code',customTheme:'🎨 Personnalisé',
+    dailyAlreadyDoneMsg:'Tu as déjà terminé le défi d\'aujourd\'hui, réessaie demain pour une nouvelle récompense !',dailyBonusMsg:'🎉 Bonus de défi quotidien : +30 XP',dailyChallengeTitle:'Défi quotidien',
+    fastestWinLabel:'Victoire la plus rapide (par tours)',friendsSub:'Passez le téléphone pour jouer ensemble',gamesCountLabel:'Parties jouées',
+    hostGameBtn:'Héberger la partie',hostSimpleStep1:'1. Appuie sur le bouton et envoie le code à ton ami (Bluetooth, WhatsApp, peu importe)',hostSimpleStep2:'2. Quand ton ami renvoie son code, appuie ici',
+    hostStartBtn:'Commencer à jouer 🎱',hotspotStep1:'Un joueur active le point d\'accès mobile (Hotspot) sur son téléphone.',hotspotStep2:'Les autres joueurs (jusqu\'à cinq) se connectent à ce point d\'accès depuis leurs téléphones.',
+    hotspotStep3:'L\'hôte appuie sur "Héberger la partie", et un code de connexion apparaît pour chaque joueur qu\'il souhaite ajouter.',hotspotStep4:'Chaque joueur ouvre le jeu, choisit "Rejoindre la partie", puis scanne ou entre le code — un autre code apparaît qui se lie automatiquement à l\'hôte pour terminer la connexion.',howto1:'Chaque joueur place les numéros 1-25 sur une grille 5x5 dans l\'ordre de son choix.',
+    howto2:'À ton tour, choisis un numéro. Il est automatiquement coché chez tous les joueurs qui l\'ont.',howto3:'Tu ne peux jouer qu\'à ton tour — attends ton tour pour toucher ta grille.',howto4:'Chaque fois que tu complètes une ligne (horizontale, verticale ou diagonale), une lettre de BINGO s\'allume.',
+    howto5:'Le premier à compléter 5 lignes (allumer B-I-N-G-O) gagne ! 🏆',howtoTitle:'Comment jouer',invalidCodeMsg:'Code invalide, réessaie',
+    joinGameBtn:'Rejoindre la partie',joinSimpleStep1:'1. Demande le code hôte à ton ami (par Bluetooth ou autre)',joinSimpleStep2:'2. Quand tu reçois le message, appuie ici',
+    joinSimpleStep3:'3. Appuie sur le bouton et renvoie ce nouveau code à ton ami de la même façon',joinedPlayersLabel:'Joueurs rejoints (',leaveRoomBtn:'Quitter le salon',
+    level:'Niveau',levelsShort:'Niveaux',levelsSub:'100 niveaux stimulants',
+    levelsSubTxt:'100 niveaux stimulants',levelsTitle:'Niveaux (100)',levelsTitleFull:'Niveaux (100)',
+    locked:'Verrouillé',mainMenuBtn:'Menu principal',maxPlayersReachedMsg:'Maximum atteint : six joueurs',
+    myStatsTitle:'Mes statistiques',nameSaved:'Nom sauvegardé ✓',needOnePlayerMsg:'Au moins un joueur doit rejoindre avant de commencer',
+    netCardSub:'Plusieurs appareils, sans internet',netCardSub2:'Plusieurs appareils via point d\'accès, sans internet',networkPlayTitle:'Jeu en réseau',
+    nextMatchBtn:'Match suivant ▶',notYourTurn:'Ce n\'est pas ton tour',numParticipants:'Nombre de participants',
+    participantNames:'Noms des participants',pasteCodeFirstMsg:'Colle le code d\'abord',pasteConnectBtnLbl:'📋 Coller & Continuer',
+    pasteOfferFirstMsg:'Colle le code de l\'hôte d\'abord',pickColor1:'Couleur principale',pickColor2:'Couleur secondaire',
+    playerJoinedMsg:'Le joueur a rejoint : ',playerNamePrompt:'Entre ton nom',pointCodeAtHostMsg:'Pointe ce code vers la caméra de l\'hôte pour te connecter automatiquement',
+    rematchBtn:'🔄 Nouvelle Manche',saveName:'Sauvegarder',setLang:'Langue',
+    setMusic:'🎵 Volume musique',setName:'Nom du joueur',setSfx:'🔊 Volume effets sonores',
+    setTheme:'🎨 Thème',settingsTitle:'Paramètres',shareCodeBtnLbl:'📤 Partager le code (Bluetooth/Nearby)',
+    speedFast:'Rapide',speedMed:'Moyen',speedSlow:'Lent',
+    starsEarned:'⭐ Étoiles gagnées',startTournamentBtn:'Commencer le tournoi 🏆',statsBtnLbl:'📊 Mes Stats',
+    tapStart:'Commencer 🎉',tournamentInfo2:'Une fois que tous les joueurs ont rejoint (max 6), l\'hôte appuie sur "Commencer à jouer".',tournamentSub:'4 ou 8 joueurs, élimination directe',netTournamentTitle:'Tournoi en réseau',netTournamentSub:'Plusieurs appareils, élimination directe',
+    tournamentTitle:'Tournoi entre amis',tournamentWinnerMsg:'🏆 Félicitations ! {name} est le champion',waitingHostRematchBtn:'En attente d\'une nouvelle manche...',
+    waitingHostRematchMsg:'En attente de l\'hôte pour une nouvelle manche',waitingHostStart:'En attente de l\'hôte pour commencer...',waitingPlayerJoinMsg:'En attente que le joueur rejoigne...',
+    welcome:'Bienvenue',welcomePlayer:'Bienvenue, {name} 👋',winRateLabel:'Taux de victoire',
+    winsCountLabel:'Victoires',xpBonus:'🎉 +50 XP bonus de première fois !',xpEarned:'+{n} XP',
+    youAreHost:'Tu es l\'hôte'
   },
   es:{
     dir:'ltr',logoSub:'Juego de Números 5×5',btnAI:'📱 Jugar contra el Teléfono',btnFriends:'👥 Jugar con Amigos',
@@ -922,7 +1043,43 @@ const LANGS={
     arrangeTitle:'Organiza tu cuadrícula',revealBtn:'Soy {name} — Listo',
     hideTitle:'Pantalla Oculta',hideSub:'Pasa el teléfono a {name}',
     bingoLetter:'🎉 {L}! — {name}',completeGrid:'Completa la cuadrícula primero',
-    aiLabel:'🤖 Teléfono'
+    aiLabel:'🤖 Teléfono',
+    achievementsBtnLbl:'🏆 Logros',achievementsLabel:'Logros',addPlayerBtn:'➕ Añadir nuevo jugador',
+    aiNamesLabel:'Nombres de jugadores IA (opcional)',aiSub:'Desafía a la IA',avatarLabel:'🙂 Avatar',
+    avatarPickedMsg:'Avatar seleccionado ',backToLevels:'Volver a los niveles',cancelBtn:'Cancelar',
+    clipboardEmptyMsg:'Aún no hay código copiado -- pide a tu amigo que lo envíe primero, o usa "Otro método"',codeCopiedMsg:'Código copiado',connectCodeBtn:'Conectar vía Código',
+    connectViaCode:'Conexión vía Código',connectedToHotspot:'Tu dispositivo está conectado al punto de acceso de tu amigo',connectedWaitingHostMsg:'✅ ¡Conectado con éxito! Esperando a que el anfitrión comience el juego...',
+    connectionCreateErrorMsg:'Ocurrió un error al crear la conexión, intenta de nuevo',connectionFailedMsg:'No se pudo completar la conexión, intenta de nuevo',connectionHowtoBtnLbl:'❓ Cómo conectar',
+    connectionHowtoTitle:'Cómo conectar',copyCodeBtnLbl:'📋 Copiar Código',customTheme:'🎨 Personalizado',
+    dailyAlreadyDoneMsg:'Ya completaste el desafío de hoy, ¡intenta de nuevo mañana para una nueva recompensa!',dailyBonusMsg:'🎉 Bono de desafío diario: +30 XP',dailyChallengeTitle:'Desafío diario',
+    fastestWinLabel:'Victoria más rápida (por turnos)',friendsSub:'Pasa el teléfono para jugar juntos',gamesCountLabel:'Partidas jugadas',
+    hostGameBtn:'Crear Partida',hostSimpleStep1:'1. Toca el botón y envía el código a tu amigo (Bluetooth, WhatsApp, de cualquier forma)',hostSimpleStep2:'2. Cuando tu amigo envíe su código de vuelta, toca aquí',
+    hostStartBtn:'Empezar a jugar 🎱',hotspotStep1:'Un jugador activa un punto de acceso móvil en su teléfono.',hotspotStep2:'Los demás jugadores (hasta cinco) se conectan a este punto de acceso desde sus teléfonos.',
+    hotspotStep3:'El anfitrión toca "Crear Partida", y aparece un código de conexión para cada jugador que quiera añadir.',hotspotStep4:'Cada jugador abre el juego, elige "Unirse a la Partida", luego escanea o ingresa el código — aparece otro código que se vincula automáticamente con el anfitrión para terminar de conectar.',howto1:'Cada jugador organiza los números 1-25 en una cuadrícula de 5x5 en el orden que prefiera.',
+    howto2:'En tu turno, elige un número. Ese número se marca automáticamente en todos los jugadores que lo tengan.',howto3:'Solo puedes jugar en tu turno — espera a que sea tu turno para tocar tu cuadrícula.',howto4:'Cada vez que completas una línea (fila, columna o diagonal), se ilumina una letra de BINGO.',
+    howto5:'¡El primer jugador en completar 5 líneas (iluminar B-I-N-G-O) gana! 🏆',howtoTitle:'Cómo jugar',invalidCodeMsg:'Código inválido, intenta de nuevo',
+    joinGameBtn:'Unirse a la partida',joinSimpleStep1:'1. Pídele a tu amigo el código del anfitrión (por Bluetooth o de cualquier forma)',joinSimpleStep2:'2. Cuando llegue el mensaje, toca aquí',
+    joinSimpleStep3:'3. Toca el botón y envía este nuevo código de vuelta a tu amigo de la misma manera',joinedPlayersLabel:'Jugadores unidos (',leaveRoomBtn:'Abandonar sala',
+    level:'Nivel',levelsShort:'Niveles',levelsSub:'100 niveles desafiantes',
+    levelsSubTxt:'100 niveles desafiantes',levelsTitle:'Niveles (100)',levelsTitleFull:'Niveles (100)',
+    locked:'Bloqueado',mainMenuBtn:'Menú principal',maxPlayersReachedMsg:'Máximo alcanzado: seis jugadores',
+    myStatsTitle:'Mis estadísticas',nameSaved:'Nombre guardado ✓',needOnePlayerMsg:'Al menos un jugador debe unirse antes de empezar',
+    netCardSub:'Múltiples dispositivos, sin internet',netCardSub2:'Múltiples dispositivos vía punto de acceso, sin internet',networkPlayTitle:'Juego en red',
+    nextMatchBtn:'Siguiente partida ▶',notYourTurn:'No es tu turno',numParticipants:'Número de participantes',
+    participantNames:'Nombres de participantes',pasteCodeFirstMsg:'Pega el código primero',pasteConnectBtnLbl:'📋 Pegar y Continuar',
+    pasteOfferFirstMsg:'Pega el código del anfitrión primero',pickColor1:'Color principal',pickColor2:'Color secundario',
+    playerJoinedMsg:'Jugador se unió: ',playerNamePrompt:'Ingresa tu nombre',pointCodeAtHostMsg:'Apunta este código a la cámara del anfitrión para completar la conexión automáticamente',
+    rematchBtn:'🔄 Nueva Ronda',saveName:'Guardar nombre',setLang:'Idioma',
+    setMusic:'🎵 Volumen de música',setName:'Nombre del jugador',setSfx:'🔊 Volumen de efectos',
+    setTheme:'🎨 Tema',settingsTitle:'Ajustes',shareCodeBtnLbl:'📤 Compartir Código (Bluetooth/Nearby)',
+    speedFast:'Rápido',speedMed:'Medio',speedSlow:'Lento',
+    starsEarned:'⭐ Estrellas ganadas',startTournamentBtn:'Empezar Torneo 🏆',statsBtnLbl:'📊 Mis Estadísticas',
+    tapStart:'Empezar 🎉',tournamentInfo2:'Una vez que todos los jugadores se unen (máximo seis), el anfitrión toca "Empezar a jugar".',tournamentSub:'4 u 8 jugadores, eliminación directa',netTournamentTitle:'Torneo en red',netTournamentSub:'Varios dispositivos, eliminación directa',
+    tournamentTitle:'Torneo de Amigos',tournamentWinnerMsg:'🏆 ¡Felicidades! {name} es el campeón',waitingHostRematchBtn:'Esperando una nueva ronda...',
+    waitingHostRematchMsg:'Esperando a que el anfitrión inicie una nueva ronda',waitingHostStart:'Esperando a que el anfitrión comience el juego...',waitingPlayerJoinMsg:'Esperando a que el jugador se una...',
+    welcome:'Bienvenido',welcomePlayer:'Bienvenido/a, {name} 👋',winRateLabel:'Tasa de victorias',
+    winsCountLabel:'Victorias',xpBonus:'🎉 ¡+50 XP bono de primera vez!',xpEarned:'+{n} XP',
+    youAreHost:'Tú eres el anfitrión'
   },
   de:{
     dir:'ltr',logoSub:'5×5 Zahlenspiel',btnAI:'📱 Gegen das Handy spielen',btnFriends:'👥 Mit Freunden spielen',
@@ -938,7 +1095,43 @@ const LANGS={
     arrangeTitle:'Ordne dein Raster',revealBtn:'Ich bin {name} — Bereit',
     hideTitle:'Bildschirm Verborgen',hideSub:'Gib das Handy an {name}',
     bingoLetter:'🎉 {L}! — {name}',completeGrid:'Raster zuerst ausfüllen',
-    aiLabel:'🤖 Handy'
+    aiLabel:'🤖 Handy',
+    achievementsBtnLbl:'🏆 Erfolge',achievementsLabel:'Erfolge',addPlayerBtn:'➕ Neuen Spieler hinzufügen',
+    aiNamesLabel:'Namen der KI-Spieler (optional)',aiSub:'Fordere die KI heraus',avatarLabel:'🙂 Avatar',
+    avatarPickedMsg:'Avatar ausgewählt ',backToLevels:'Zurück zu den Leveln',cancelBtn:'Abbrechen',
+    clipboardEmptyMsg:'Noch kein Code kopiert -- bitte deinen Freund, ihn zuerst zu senden, oder nutze "Andere Methode"',codeCopiedMsg:'Code kopiert',connectCodeBtn:'Über Code verbinden',
+    connectViaCode:'Verbindung über Code',connectedToHotspot:'Dein Gerät ist mit dem Hotspot deines Freundes verbunden',connectedWaitingHostMsg:'✅ Erfolgreich verbunden! Warte auf den Host, um das Spiel zu starten...',
+    connectionCreateErrorMsg:'Fehler beim Erstellen der Verbindung, versuche es erneut',connectionFailedMsg:'Verbindung konnte nicht hergestellt werden, versuche es erneut',connectionHowtoBtnLbl:'❓ Wie man sich verbindet',
+    connectionHowtoTitle:'Wie man sich verbindet',copyCodeBtnLbl:'📋 Code kopieren',customTheme:'🎨 Benutzerdefiniert',
+    dailyAlreadyDoneMsg:'Du hast die heutige Herausforderung bereits abgeschlossen. Versuche es morgen für eine neue Belohnung erneut!',dailyBonusMsg:'🎉 Täglicher Herausforderungsbonus: +30 XP',dailyChallengeTitle:'Tägliche Herausforderung',
+    fastestWinLabel:'Schnellster Sieg (nach Zügen)',friendsSub:'Gebt das Telefon weiter, um zusammen zu spielen',gamesCountLabel:'Gespielte Spiele',
+    hostGameBtn:'Spiel hosten',hostSimpleStep1:'1. Tippe auf den Button und sende den Code an deinen Freund (Bluetooth, WhatsApp, egal wie)',hostSimpleStep2:'2. Wenn dein Freund seinen Code zurücksendet, tippe hier',
+    hostStartBtn:'Spiel jetzt starten 🎱',hotspotStep1:'Ein Spieler aktiviert einen mobilen Hotspot auf seinem Telefon.',hotspotStep2:'Die anderen Spieler (bis zu fünf) verbinden sich von ihren Telefonen mit diesem Hotspot.',
+    hotspotStep3:'Der Host tippt auf "Spiel hosten", und ein Verbindungscode für jeden Spieler, den er möchte hinzufügen, erscheint.',hotspotStep4:'Jeder Spieler öffnet das Spiel, wählt "Spiel beitreten", scannt oder gibt den Code ein — ein weiterer Code erscheint, der automatisch zum Host zurückverlinkt, um die Verbindung herzustellen.',howto1:'Jeder Spieler ordnet die Zahlen 1-25 auf einem 5x5-Raster in beliebiger Reihenfolge an.',
+    howto2:'Wähle in deinem Zug eine Zahl. Diese wird automatisch bei jedem Spieler markiert, der sie hat.',howto3:'Du kannst nur in deinem eigenen Zug spielen — warte, bis du an der Reihe bist, um dein Raster anzutippen.',howto4:'Jedes Mal, wenn du eine ganze Linie (Reihe, Spalte oder Diagonale) vervollständigst, leuchtet ein Buchstabe von BINGO auf.',
+    howto5:'Der erste Spieler, der alle 5 Linien vervollständigt (B-I-N-G-O aufleuchten lässt), gewinnt! 🏆',howtoTitle:'Wie man spielt',invalidCodeMsg:'Ungültiger Code, versuche es erneut',
+    joinGameBtn:'Spiel beitreten',joinSimpleStep1:'1. Bitte deinen Freund um den Host-Code (über Bluetooth oder anders)',joinSimpleStep2:'2. Wenn die Nachricht ankommt, tippe hier',
+    joinSimpleStep3:'3. Tippe auf den Button und sende diesen neuen Code auf demselben Weg an deinen Freund zurück',joinedPlayersLabel:'Beigetretene Spieler (',leaveRoomBtn:'Raum verlassen',
+    level:'Level',levelsShort:'Level',levelsSub:'100 herausfordernde Level',
+    levelsSubTxt:'100 herausfordernde Level',levelsTitle:'Level (100)',levelsTitleFull:'Level (100)',
+    locked:'Gesperrt',mainMenuBtn:'Hauptmenü',maxPlayersReachedMsg:'Maximum erreicht: sechs Spieler',
+    myStatsTitle:'Meine Statistiken',nameSaved:'Name gespeichert ✓',needOnePlayerMsg:'Mindestens ein Spieler muss beitreten, bevor es losgeht',
+    netCardSub:'Mehrere Geräte, kein Internet',netCardSub2:'Mehrere Geräte über Hotspot, kein Internet',networkPlayTitle:'Netzwerkspiel',
+    nextMatchBtn:'Nächstes Spiel ▶',notYourTurn:'Nicht dein Zug',numParticipants:'Anzahl der Teilnehmer',
+    participantNames:'Namen der Teilnehmer',pasteCodeFirstMsg:'Füge zuerst den Code ein',pasteConnectBtnLbl:'📋 Einfügen & Weiter',
+    pasteOfferFirstMsg:'Füge zuerst den Host-Code ein',pickColor1:'Primärfarbe',pickColor2:'Sekundärfarbe',
+    playerJoinedMsg:'Spieler beigetreten: ',playerNamePrompt:'Gib deinen Namen ein',pointCodeAtHostMsg:'Richte diesen Code auf die Kamera des Hosts, um die Verbindung automatisch abzuschließen',
+    rematchBtn:'🔄 Neue Runde',saveName:'Namen speichern',setLang:'Sprache',
+    setMusic:'🎵 Musiklautstärke',setName:'Spielername',setSfx:'🔊 Soundeffekte',
+    setTheme:'🎨 Design',settingsTitle:'Einstellungen',shareCodeBtnLbl:'📤 Code teilen (Bluetooth/Nearby)',
+    speedFast:'Schnell',speedMed:'Mittel',speedSlow:'Langsam',
+    starsEarned:'⭐ Verdiente Sterne',startTournamentBtn:'Turnier starten 🏆',statsBtnLbl:'📊 Meine Statistiken',
+    tapStart:'Start 🎉',tournamentInfo2:'Nachdem alle Spieler beigetreten sind (max. sechs), tippt der Host auf "Spiel jetzt starten".',tournamentSub:'4 oder 8 Spieler, K.o.-System',netTournamentTitle:'Netzwerkturnier',netTournamentSub:'Mehrere Geräte, K.o.-System',
+    tournamentTitle:'Freundschaftsturnier',tournamentWinnerMsg:'🏆 Glückwunsch! {name} ist der Champion',waitingHostRematchBtn:'Warte auf eine neue Runde...',
+    waitingHostRematchMsg:'Warte auf den Host für eine neue Runde',waitingHostStart:'Warte auf den Host, um das Spiel zu starten...',waitingPlayerJoinMsg:'Warte auf Beitritt des Spielers...',
+    welcome:'Willkommen',welcomePlayer:'Willkommen, {name} 👋',winRateLabel:'Gewinnquote',
+    winsCountLabel:'Siege',xpBonus:'🎉 +50 XP Erstmaliger Bonus!',xpEarned:'+{n} XP',
+    youAreHost:'Du bist der Host'
   }
 };
 ['fr','es','de'].forEach(l=>{LANGS[l]=Object.assign({},LANGS.en,LANGS[l]);});
@@ -1278,7 +1471,6 @@ function tutorialHighlightBestMove(){
 }
 function finishLoading(){
   startAmbientMusic();
-  document.getElementById('settings-widget').style.display='flex';
   if(!playerName&&!localStorage.getItem('bingo_onboarded')){
     showScreen('s-onboard');
     setOnboardLang(settings.lang||'ar');
@@ -1456,6 +1648,8 @@ function showScreen(id,fromNav){
   if(id==='s-settings'){document.getElementById('inp-settings-name').value=playerName;updateThemeButtons();}
   const sw=document.getElementById('speed-widget');
   if(sw)sw.style.display=(id==='s-game'&&mode==='ai')?'flex':'none';
+  const setw=document.getElementById('settings-widget');
+  if(setw)setw.style.display=(id==='s-game')?'flex':'none';
 }
 // زر الرجوع: بدل ما يعتمد على تاريخ تراكمي (كان بيرجعك لشاشات لعبات سابقة قديمة)،
 // بيحسب دايماً وين المفروض يرجع بناءً على الوضع الحالي فعلياً — رجوع منطقي مو رجوع تاريخي.
@@ -1473,6 +1667,7 @@ function getBackTarget(){
     case 's-settings':
       return settingsReturnScreen;
     case 's-game':
+      if(netTournamentActive)return 's-welcome';
       if(dailyMode||tournament)return 's-welcome';
       if(netMode)return netRole==='host'?'s-host':(netRole==='join'?'s-join':'s-connect');
       return 's-setup';
@@ -1484,7 +1679,9 @@ function getBackTarget(){
       if(netArrangeContext==='guest'||netArrangeContext==='guest-inroom')return 's-join';
       return 's-setup';
     case 's-host': case 's-join':
-      return 's-connect';
+      return netTournamentActive?'s-net-tournament-size':'s-connect';
+    case 's-tournament-spectate':
+      return 's-welcome';
     default:
       return 's-welcome';
   }
@@ -1504,7 +1701,8 @@ function goBack(){
     return;
   }
   const target=getBackTarget();
-  if(netMode&&(id==='s-host'||id==='s-join'||id==='s-game'||id==='s-arrange')&&target==='s-connect'){
+  if(netMode&&(id==='s-host'||id==='s-join'||id==='s-game'||id==='s-arrange'||id==='s-tournament-spectate')&&
+     (target==='s-connect'||target==='s-net-tournament-size'||target==='s-welcome')){
     cancelNetwork();
   }
   showScreen(target);
@@ -1592,11 +1790,13 @@ function startSetup(){
   if(mode==='ai'){
     players.push(mkPlayer(p1,false));
     const aiNames=[];
+    const usedRandomNames=new Set();
+    usedRandomNames.add(p1);
     for(let i=1;i<=chosenAICount;i++){
       const inp=document.getElementById('inp-ai'+i);
       const v=inp?inp.value.trim():'';
       aiNames.push(v);
-      players.push(mkPlayer(v||T('aiLabel')+' '+i,true));
+      players.push(mkPlayer(v||randomPlayerName(usedRandomNames),true));
     }
     savedNames.ai=aiNames;
     lastSetup={mode:'ai',count:chosenAICount,difficulty};
@@ -1836,8 +2036,10 @@ function nextTurn(){
   inputLocked=true;
   if(netMode&&netRole==='host'){
     broadcastState();
-    if(currentIdx===0){renderGame();}
-    else{renderGameForHuman();}
+    if(hostInActiveMatch()){
+      if(currentIdx===0){renderGame();}
+      else{renderGameForHuman();}
+    }
     if(p.isAI){setTimeout(doAITurn,delay(1000));}
     return;
   }
@@ -1848,6 +2050,15 @@ function nextTurn(){
     if(mode==='ai'||mode==='tournament'){renderGame();}
     else{document.getElementById('pass-name').textContent=p.name;showScreen('s-pass');}
   }
+}
+// True while the host itself is one of the two active tournament match participants
+// (always players[0] in that case — see startNetMatch). Outside tournament mode, the
+// host is always "in the match" by definition, preserving today's regular-net behavior.
+function hostInActiveMatch(){
+  if(!netTournamentActive)return true;
+  if(!netTournament||!netTournament.activePair)return false;
+  const rc=netTournament.rosterConn;
+  return rc[netTournament.activePair[0]]==='host'||rc[netTournament.activePair[1]]==='host';
 }
 
 function renderGameForHuman(){
@@ -1924,6 +2135,7 @@ let lastWinnerWasHuman=false, lastLevelStars=0, lastXPGain=0;
 let lastGameWinnerIdx=0; // لتحديد مين يبلش الجولة الجاية بإعادة اللعب الشبكي (الفائز، مو صاحب نقطة الاتصال دايماً)
 function endGame(winnerIndices){
   const rbReset=document.getElementById('win-rearrange-btn');if(rbReset)rbReset.style.display='none';
+  const wbmReset=document.getElementById('win-bot-manage');if(wbmReset)wbmReset.style.display='none';
   gameOver=true;inputLocked=true;
   document.querySelectorAll('.gcell.tutorial-hint').forEach(c=>c.classList.remove('tutorial-hint'));
   const wi=winnerIndices[0];
@@ -1949,6 +2161,7 @@ function endGame(winnerIndices){
     return;
   }
   if(mode==='tournament'){handleTournamentMatchEnd(wi);return;}
+  if(netTournamentActive){handleNetTournamentMatchEnd(winnerIndices);return;}
   if(netMode&&netRole==='host'){
     broadcastState();
     hostConns.forEach(c=>{ if(c.dc&&c.dc.readyState==='open') c.dc.send(JSON.stringify({type:'win',winnerIndices})); });
@@ -2001,6 +2214,8 @@ function endGame(winnerIndices){
     secBtn.textContent=T('leaveRoomBtn');
     secBtn.onclick=leaveNetworkRoom;
     document.getElementById('t-play-again').textContent=T('rematchBtn');
+    const wbm=document.getElementById('win-bot-manage');if(wbm)wbm.style.display='flex';
+    renderWinBotManage();
   } else if(currentLevel && lastWinnerWasHuman){
     let stars=1;
     if(totalTurns<=currentLevel.star5)stars=5;
@@ -2121,8 +2336,7 @@ function startLevel(i){
 // ══════════════════════════════════════════
 //  TOURNAMENT MODE (same device, single elimination)
 // ══════════════════════════════════════════
-let tournament=null, tCount=4;
-function selectTournamentCount(n){
+let tournament=null, tCount=4;function selectTournamentCount(n){
   tCount=n;
   document.getElementById('tcount-4').classList.toggle('selected',n===4);
   document.getElementById('tcount-6').classList.toggle('selected',n===6);
@@ -2230,6 +2444,30 @@ let netMode=false, netRole=null;
 let hostConns=[];
 let joinConn=null;
 let myJoinIndex=null;
+let myRosterIdx=null; // client-side: stable roster position for the whole tournament,
+                       // separate from myJoinIndex which gets reused as the 0/1 match seat
+                       // during an active tournament match (see 'matchSeat' messages).
+
+// ══════════════════════════════════════════
+//  NETWORK TOURNAMENT (single elimination, played over the same star-topology
+//  connection as regular network play). Design notes:
+//  - The lobby roster (players[] at the moment it becomes full) is snapshotted into
+//    netTournament.roster; each roster slot's identity is its index there, which is
+//    stable for the whole tournament (unlike the `players` array, which gets swapped
+//    to a 2-element [A,B] pair for the duration of each individual match, reusing the
+//    exact same single-game engine — arranging/doScratch/broadcastState/endGame — that
+//    already powers local pass-and-play tournaments and regular network games).
+//  - Whichever roster slot is the host is always placed at players[0] for an active
+//    match (never players[1]) so the existing "host===players[0]" assumption baked into
+//    nextTurn()/checkAllRematchReadyThenStart() keeps working unmodified.
+//  - Everyone connected who is NOT one of the two active match participants is a
+//    spectator: their hostConns idx is set to null (so hostOnMessage's turn-validation
+//    guard naturally ignores any stray scratch attempts) and they receive a lightweight
+//    'tournamentLive' message instead of the full 'state' payload.
+// ══════════════════════════════════════════
+let netTournamentActive=false, netTournamentSize=4, netTournament=null;
+let netReconnectAttempts=0, netReconnectTimer=null;
+function netMaxPlayers(){return netTournamentActive?netTournamentSize:6;}
 
 // ══════════════════════════════════════════
 //  جسر الاتصال المباشر (Android WebView + Kotlin Socket) — بديل WebRTC
@@ -2251,11 +2489,17 @@ if(window.AndroidBridge){
     if(!entry||!entry.dc.onmessage)return;
     entry.dc.onmessage({data:b64dec(b64data)});
   };
-  window.onNetClientDisconnected=function(id){ delete nativeHostConnsById[id]; };
+  window.onNetClientDisconnected=function(id){
+    const entry=nativeHostConnsById[id];
+    delete nativeHostConnsById[id];
+    if(entry)handleHostConnLost(entry);
+  };
   window.onNetJoinConnected=function(){
     const dc={readyState:'open',onmessage:null,send:function(data){AndroidBridge.sendToHost(data);}};
     joinConn={pc:null,dc};
     dc.onmessage=(ev)=>joinOnMessage(ev.data);
+    netReconnectAttempts=0;clearTimeout(netReconnectTimer);
+    const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='none';
     const nameV=playerName||T('pLabel');
     const tempGrid=shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]);
     dc.send(JSON.stringify({type:'hello',name:nameV,grid:tempGrid}));
@@ -2268,11 +2512,26 @@ if(window.AndroidBridge){
     if(joinConn&&joinConn.dc&&joinConn.dc.onmessage)joinConn.dc.onmessage({data:b64dec(b64data)});
   };
   window.onNetError=function(msg){ showToast(T('connectionFailedMsg')); };
+  window.onNetHostDisconnected=function(){
+    if(!netMode||netRole!=='join')return;
+    joinConn=null;
+    if(netTournamentActive){
+      const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='block';
+      netReconnectAttempts=0;
+      attemptGuestReconnect();
+    } else {
+      showToast(T('connectionFailedMsg'));
+    }
+  };
 }
 
 function cancelNetwork(){
-  netMode=false;netRole=null;myJoinIndex=null;netArrangeContext=null;pendingGuestGrid=null;pendingOfferSdp=null;
+  netMode=false;netRole=null;myJoinIndex=null;myRosterIdx=null;netArrangeContext=null;pendingGuestGrid=null;pendingOfferSdp=null;
   rematchReadySet=new Set();hostReadyForRematch=false;pendingArrangeFromGuests=0;
+  netTournamentActive=false;netTournament=null;netTournamentClientData=null;netTournamentLiveClientData=null;
+  netReconnectAttempts=0;clearTimeout(netReconnectTimer);netReconnectTimer=null;
+  const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='none';
+  const badge=document.getElementById('host-tournament-badge');if(badge)badge.style.display='none';
   hostConns.forEach(c=>{try{if(c.pc)c.pc.close();}catch(e){}});hostConns=[];
   if(joinConn){try{if(joinConn.pc)joinConn.pc.close();}catch(e){}joinConn=null;}
   if(window.AndroidBridge){try{AndroidBridge.closeNetwork();}catch(e){}window.__nativeHostStarted=false;}
@@ -2345,22 +2604,69 @@ function startHostFlow(){
   showScreen('s-host');
 }
 function hostAddAiBot(){
-  if(players.length>=6){showToast(T('maxPlayersReachedMsg'));return;}
+  if(players.length>=netMaxPlayers()){showToast(T('maxPlayersReachedMsg'));return;}
   const used=new Set(players.map(p=>p.name));
   players.push(mkPlayer(randomPlayerName(used),true));
   renderHostPlayerList();
 }
+// Removing a bot always shifts indices of any players after it down by one, so any
+// already-joined human connEntry.idx pointing past the removed bot must shift too —
+// this is the only bookkeeping needed since bots never have a hostConns entry of their own.
+function hostRemoveAiBot(idx){
+  if(!players[idx]||!players[idx].isAI)return;
+  players.splice(idx,1);
+  hostConns.forEach(c=>{if(c.idx!=null&&c.idx>idx)c.idx--;});
+  renderHostPlayerList();
+  renderWinBotManage();
+}
 function renderHostPlayerList(){
   const el=document.getElementById('host-player-list');el.innerHTML='';
   players.forEach((p,i)=>{
-    const d=document.createElement('div');d.className='net-player-item';
-    d.textContent=(i===0?'👑 ':(p.isAI?'🤖 ':''))+p.name+(i===0?' (أنت)':'');
-    el.appendChild(d);
+    if(p.isAI){
+      const d=document.createElement('div');d.className='net-player-item-row';
+      const span=document.createElement('span');span.textContent='🤖 '+p.name;
+      const rb=document.createElement('button');rb.className='bot-remove-btn';rb.textContent='✕';
+      rb.onclick=()=>hostRemoveAiBot(i);
+      d.appendChild(span);d.appendChild(rb);
+      el.appendChild(d);
+    } else {
+      const d=document.createElement('div');d.className='net-player-item';
+      d.textContent=(i===0?'👑 ':'')+p.name+(i===0?' (أنت)':'');
+      el.appendChild(d);
+    }
   });
   document.getElementById('host-count').textContent=players.length;
-  document.getElementById('host-start-btn').style.display=players.length>=2?'block':'none';
-  document.getElementById('host-add-btn').style.display=players.length<6?'block':'none';
-  const aiBtn=document.getElementById('host-add-ai-btn');if(aiBtn)aiBtn.style.display=players.length<6?'block':'none';
+  const cap=netMaxPlayers();
+  const capEl=document.getElementById('host-cap');if(capEl)capEl.textContent=cap;
+  if(netTournamentActive){
+    document.getElementById('host-start-btn').style.display=players.length===cap?'block':'none';
+  } else {
+    document.getElementById('host-start-btn').style.display=players.length>=2?'block':'none';
+  }
+  document.getElementById('host-add-btn').style.display=players.length<cap?'block':'none';
+  const aiBtn=document.getElementById('host-add-ai-btn');if(aiBtn)aiBtn.style.display=players.length<cap?'block':'none';
+}
+// Between-rounds bot management (host only) — shown on the win screen so the host can
+// add/remove AI bots before starting the next round, without needing to leave the room.
+function renderWinBotManage(){
+  const wrap=document.getElementById('win-bot-manage');
+  if(!wrap||wrap.style.display==='none')return;
+  const list=document.getElementById('win-bot-list');list.innerHTML='';
+  players.forEach((p,i)=>{
+    if(!p.isAI)return;
+    const d=document.createElement('div');d.className='net-player-item-row';
+    const span=document.createElement('span');span.textContent='🤖 '+p.name;
+    const rb=document.createElement('button');rb.className='bot-remove-btn';rb.textContent='✕';
+    rb.onclick=()=>hostRemoveAiBot(i);
+    d.appendChild(span);d.appendChild(rb);
+    list.appendChild(d);
+  });
+  const addBtn=document.getElementById('win-add-ai-btn');
+  if(addBtn)addBtn.style.display=players.length<6?'block':'none';
+}
+function hostAddAiBotBetweenRounds(){
+  hostAddAiBot();
+  renderWinBotManage();
 }
 // The connection is always over a phone hotspot (IPv4-only in practice), so IPv6-literal
 // candidates are dead weight — a smaller payload means a much simpler, faster-to-scan QR
@@ -2375,7 +2681,7 @@ function trimSdpForQR(sdp){
   }).join('\r\n');
 }
 async function hostAddPlayer(){
-  if(players.length>=6){showToast(T('maxPlayersReachedMsg'));return;}
+  if(players.length>=netMaxPlayers()){showToast(T('maxPlayersReachedMsg'));return;}
   if(window.AndroidBridge){
     if(!window.__nativeHostStarted){
       window.__nativeHostStarted=true;
@@ -2409,7 +2715,7 @@ async function hostApplyAnswerDataFor(connEntry,dataStr){
     await connEntry.pc.setRemoteDescription({type:'answer',sdp:parsed.sdp});
   }catch(e){showToast(T('connectionFailedMsg'));document.getElementById('host-add-btn').style.display='block';return;}
   document.getElementById('host-qr-area').style.display='none';
-  document.getElementById('host-add-btn').style.display=players.length<6?'block':'none';
+  document.getElementById('host-add-btn').style.display=players.length<netMaxPlayers()?'block':'none';
   const hap=document.getElementById('host-answer-paste');if(hap)hap.value='';
   showToast(T('waitingPlayerJoinMsg'));
 }
@@ -2423,6 +2729,24 @@ function hostPasteAnswer(){
 function hostOnMessage(connEntry,raw){
   let msg;try{msg=JSON.parse(raw);}catch(e){return;}
   if(msg.type==='hello'){
+    if(netTournamentActive&&netTournament){
+      const ri=netTournament.roster.findIndex(r=>r.name===msg.name&&r.disconnected);
+      if(ri>=0){
+        netTournament.roster[ri].disconnected=false;
+        netTournament.rosterConn[ri]=connEntry;
+        if(netTournament.activePair&&netTournament.activePair.includes(ri)){
+          connEntry.idx=netTournament.activePair[0]===ri?0:1;
+          connEntry.dc.send(JSON.stringify({type:'matchSeat',idx:connEntry.idx}));
+          broadcastState(true);
+        } else {
+          connEntry.idx=null;
+          connEntry.dc.send(JSON.stringify({type:'tournamentReconnected'}));
+          broadcastTournamentBracket();
+        }
+        showToast(msg.name+(lang==='ar'?' رجع للاتصال ✅':' reconnected ✅'));
+        return;
+      }
+    }
     connEntry.name=msg.name||('لاعب '+(players.length+1));
     connEntry.idx=players.length;
     players.push(mkPlayer(connEntry.name,false,msg.grid));
@@ -2470,6 +2794,7 @@ function hostStartGame(){
 }
 function checkAllArrangedThenStart(){
   if(pendingArrangeFromGuests>0)return;
+  if(netTournamentActive){buildAndStartNetTournament();return;}
   currentIdx=0;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
   unlockAchievement('net_player');
   broadcastState(true);
@@ -2492,8 +2817,270 @@ function broadcastState(starting){
   const payload=JSON.stringify({type:'state',starting:!!starting,
     players:players.map(p=>({name:p.name,grid:p.grid,scratched:[...p.scratched],bingoCount:p.bingoCount,winLines:p.winLines})),
     currentIdx,totalTurns,gameOver});
+  if(netTournamentActive&&netTournament&&netTournament.activePair){
+    const livePayload=JSON.stringify(netTournamentLiveData());
+    hostConns.forEach(c=>{
+      if(!c.dc||c.dc.readyState!=='open')return;
+      if(c.idx===0||c.idx===1)c.dc.send(payload);
+      else c.dc.send(livePayload);
+    });
+    if(!hostInActiveMatch())renderNetTournamentSpectateLive();
+    return;
+  }
   hostConns.forEach(c=>{if(c.dc&&c.dc.readyState==='open')c.dc.send(payload);});
 }
+
+// ══════════════════════════════════════════
+//  NETWORK TOURNAMENT — lobby entry, bracket engine, spectator sync, reconnect/forfeit
+// ══════════════════════════════════════════
+let netTournamentClientData=null, netTournamentLiveClientData=null;
+
+function selectNetTournamentSize(n){
+  netTournamentSize=n;
+  [4,6,8,10].forEach(v=>{const b=document.getElementById('ntcount-'+v);if(b)b.classList.toggle('selected',v===n);});
+  const hint=document.getElementById('net-tournament-size-hint');
+  if(hint)hint.textContent=lang==='ar'
+    ?('لازم يوصل '+n+' لاعبين بالضبط (تقدر تكمّل الناقص بلاعبي ذكاء اصطناعي) قبل ما تبلش البطولة')
+    :('Exactly '+n+' players must join (AI bots can fill any gap) before the tournament can start');
+}
+function startNetTournamentHostFlow(){
+  netTournamentActive=true;
+  startHostFlow();
+  const badge=document.getElementById('host-tournament-badge');if(badge)badge.style.display='block';
+  renderHostPlayerList();
+}
+function buildAndStartNetTournament(){
+  const roster=players.map(p=>({name:p.name,isAI:p.isAI,grid:p.grid,disconnected:false}));
+  const rosterConn=players.map((p,i)=>i===0?'host':(p.isAI?null:(hostConns.find(c=>c.idx===i)||null)));
+  const order=shuffle(roster.map((_,i)=>i));
+  netTournament={roster,rosterConn,round:pairUp(order),winners:[],matchIndex:0,roundNum:1,activePair:null,champion:null};
+  broadcastTournamentBracket();
+  showScreen('s-tournament-spectate');
+  runNextNetMatch();
+}
+function netTournamentShapeForClient(){
+  const nt=netTournament;
+  if(!nt)return null;
+  return {roster:nt.roster.map(r=>({name:r.name,isAI:r.isAI,disconnected:!!r.disconnected})),
+    round:nt.round,winners:nt.winners,matchIndex:nt.matchIndex,roundNum:nt.roundNum,
+    activePair:nt.activePair,champion:nt.champion};
+}
+function broadcastTournamentBracket(){
+  if(!netTournament)return;
+  const payload=JSON.stringify(Object.assign({type:'tournamentBracket'},netTournamentShapeForClient()));
+  hostConns.forEach(c=>{if(c.dc&&c.dc.readyState==='open')c.dc.send(payload);});
+  renderNetTournamentSpectate();
+}
+function netTournamentLiveData(){
+  if(!netTournament||!netTournament.activePair||players.length!==2)return null;
+  return {type:'tournamentLive',
+    names:[players[0].name,players[1].name],
+    bingoCount:[players[0].bingoCount,players[1].bingoCount],
+    scratchedCount:[players[0].scratched.size,players[1].scratched.size],
+    currentIdx,totalTurns,gameOver};
+}
+function runNextNetMatch(){
+  const nt=netTournament;
+  if(!nt)return;
+  if(nt.matchIndex>=nt.round.length){
+    if(nt.winners.length===1){
+      nt.champion=nt.roster[nt.winners[0]].name;
+      nt.activePair=null;
+      unlockAchievement('tournament_champ');
+      broadcastTournamentBracket();
+      showNetTournamentChampion();
+      return;
+    }
+    nt.round=pairUp(shuffle(nt.winners));
+    nt.winners=[];nt.matchIndex=0;nt.roundNum++;
+    broadcastTournamentBracket();
+    runNextNetMatch();
+    return;
+  }
+  const pair=nt.round[nt.matchIndex];
+  if(pair[1]===null){
+    nt.winners.push(pair[0]);nt.matchIndex++;
+    const byeName=nt.roster[pair[0]].name;
+    showToast(byeName+(lang==='ar'?' تأهل تلقائياً (بدون منافس هالجولة)':' advances automatically (no opponent this round)'));
+    broadcastTournamentBracket();
+    runNextNetMatch();
+    return;
+  }
+  startNetMatch(pair[0],pair[1]);
+}
+function startNetMatch(rIdxA,rIdxB){
+  const nt=netTournament;
+  if(nt.roster[rIdxA].disconnected){netTournamentAutoForfeitPreMatch(rIdxA,rIdxB);return;}
+  if(nt.roster[rIdxB].disconnected){netTournamentAutoForfeitPreMatch(rIdxB,rIdxA);return;}
+  let a=rIdxA,b=rIdxB;
+  if(nt.rosterConn[b]==='host'){const t=a;a=b;b=t;} // host, when present, is always players[0]
+  nt.activePair=[a,b];
+  hostConns.forEach(c=>{c.idx=null;}); // everyone starts this match as a spectator...
+  const connA=nt.rosterConn[a], connB=nt.rosterConn[b];
+  if(connA&&connA!=='host'){connA.idx=0;connA.dc.send(JSON.stringify({type:'matchSeat',idx:0}));}
+  if(connB&&connB!=='host'){connB.idx=1;connB.dc.send(JSON.stringify({type:'matchSeat',idx:1}));} // ...except the 2 who are actually playing
+  const rA=nt.roster[a], rB=nt.roster[b];
+  players=[mkPlayer(rA.name,rA.isAI,rA.grid),mkPlayer(rB.name,rB.isAI,rB.grid)];
+  currentIdx=0;totalTurns=0;gameOver=false;currentLevel=null;mode='net';
+  broadcastTournamentBracket();
+  broadcastState(true);
+  if(connA==='host'){renderGame();}
+  else{showScreen('s-tournament-spectate');renderNetTournamentSpectate();}
+  if(players[currentIdx].isAI)setTimeout(doAITurn,delay(1000));
+}
+function netTournamentAutoForfeitPreMatch(missingRosterIdx,opponentRosterIdx){
+  const nt=netTournament;
+  showToast(nt.roster[missingRosterIdx].name+(lang==='ar'?' لسا مفصول، خسر بالانسحاب':' still disconnected, forfeits'));
+  nt.winners.push(opponentRosterIdx);
+  nt.matchIndex++;
+  broadcastTournamentBracket();
+  runNextNetMatch();
+}
+function netTournamentAutoForfeit(rosterIdx){
+  const nt=netTournament;
+  if(!nt||!nt.activePair||!nt.activePair.includes(rosterIdx))return;
+  if(!nt.roster[rosterIdx].disconnected)return; // reconnected in time — nothing to do
+  const winnerLocalIdx=nt.activePair[0]===rosterIdx?1:0;
+  showToast(nt.roster[rosterIdx].name+(lang==='ar'?' لم يرجع، خسر بالانسحاب':' forfeited (disconnected)'));
+  handleNetTournamentMatchEnd([winnerLocalIdx]);
+}
+function handleNetTournamentMatchEnd(winnerLocalIndices){
+  const nt=netTournament;
+  const localWinnerIdx=winnerLocalIndices[0];
+  const winnerRosterIdx=nt.activePair[localWinnerIdx];
+  const winnerName=nt.roster[winnerRosterIdx].name;
+  playSound('win');
+  if(navigator.vibrate)navigator.vibrate([90,50,90,50,220]);
+  nt.roster[nt.activePair[0]].grid=players[0].grid;
+  nt.roster[nt.activePair[1]].grid=players[1].grid;
+  const rc=nt.rosterConn;
+  [0,1].forEach(li=>{
+    const conn=rc[nt.activePair[li]];
+    if(conn&&conn!=='host'&&conn.dc&&conn.dc.readyState==='open'){
+      conn.dc.send(JSON.stringify({type:'tournamentMatchOver',winnerName,youWon:li===localWinnerIdx}));
+    }
+  });
+  nt.winners.push(winnerRosterIdx);
+  nt.matchIndex++;
+  nt.activePair=null;
+  showToast(winnerName+(lang==='ar'?' فاز بالمباراة! 🏆':' won the match! 🏆'));
+  gameOver=true;
+  showScreen('s-tournament-spectate');
+  startConfetti();
+  broadcastTournamentBracket();
+  setTimeout(runNextNetMatch,1800); // brief pause so the win moment registers before the next match starts
+}
+function bingoLettersHtml(count){
+  return BINGO.map((l,i)=>'<span'+(i<count?' class="on"':'')+'>'+l+'</span>').join('');
+}
+function renderNetTournamentSpectateClient(bracket,live){
+  if(!bracket)return;
+  if(bracket.champion){showNetTournamentChampionClient(bracket);return;}
+  const rt=document.getElementById('nts-round-title');
+  if(rt)rt.textContent=(lang==='ar'?'الجولة ':'Round ')+bracket.roundNum;
+  const champ=document.getElementById('nts-champion');if(champ)champ.style.display='none';
+  const spot=document.getElementById('nts-spotlight');
+  if(bracket.activePair&&live){
+    spot.style.display='flex';
+    const nameA=(live.names&&live.names[0])||(bracket.roster[bracket.activePair[0]]||{}).name||'—';
+    const nameB=(live.names&&live.names[1])||(bracket.roster[bracket.activePair[1]]||{}).name||'—';
+    document.getElementById('nts-name-a').textContent=nameA;
+    document.getElementById('nts-name-b').textContent=nameB;
+    document.getElementById('nts-bingo-a').innerHTML=bingoLettersHtml(live.bingoCount?live.bingoCount[0]:0);
+    document.getElementById('nts-bingo-b').innerHTML=bingoLettersHtml(live.bingoCount?live.bingoCount[1]:0);
+    document.getElementById('nts-scratch-a').textContent=(live.scratchedCount?live.scratchedCount[0]:0)+' 🔢';
+    document.getElementById('nts-scratch-b').textContent=(live.scratchedCount?live.scratchedCount[1]:0)+' 🔢';
+    const turnIsA=live.currentIdx===0;
+    const ti=document.getElementById('nts-turn-indicator');
+    if(ti)ti.textContent=(lang==='ar'?'🎯 دور ':'🎯 Turn: ')+(turnIsA?nameA:nameB);
+    const sa=document.getElementById('nts-side-a'),sb=document.getElementById('nts-side-b');
+    if(sa)sa.style.opacity=turnIsA?'1':'.55';
+    if(sb)sb.style.opacity=turnIsA?'.55':'1';
+  } else if(spot){
+    spot.style.display='none';
+  }
+  const listEl=document.getElementById('nts-bracket-list');
+  if(!listEl)return;
+  listEl.innerHTML='';
+  bracket.round.forEach((pair,i)=>{
+    const d=document.createElement('div');d.className='net-player-item';
+    const rA=bracket.roster[pair[0]]||{name:'—'};
+    const nameA=rA.name+(rA.disconnected?' 🔌':'');
+    const isActive=!!(bracket.activePair&&bracket.activePair[0]===pair[0]&&bracket.activePair[1]===pair[1]);
+    const played=i<bracket.matchIndex;
+    if(pair[1]===null){
+      d.textContent='🎟️ '+nameA+(lang==='ar'?' — تأهل تلقائياً':' — auto-advances');
+    } else {
+      const rB=bracket.roster[pair[1]]||{name:'—'};
+      const nameB=rB.name+(rB.disconnected?' 🔌':'');
+      d.textContent=(isActive?'⚡ ':played?'✅ ':'⏳ ')+nameA+' 🆚 '+nameB;
+    }
+    listEl.appendChild(d);
+  });
+}
+function renderNetTournamentSpectate(){
+  const shaped=netTournamentShapeForClient();
+  if(!shaped)return;
+  if(shaped.champion){showNetTournamentChampionClient(shaped);return;}
+  if(hostInActiveMatch())return; // s-game owns the screen while the host is actually playing
+  renderNetTournamentSpectateClient(shaped,netTournamentLiveData());
+}
+function renderNetTournamentSpectateLive(){
+  const shaped=netTournamentShapeForClient();
+  if(!shaped||!shaped.activePair)return;
+  renderNetTournamentSpectateClient(shaped,netTournamentLiveData());
+}
+function showNetTournamentChampionClient(bracket){
+  showScreen('s-tournament-spectate');
+  const spot=document.getElementById('nts-spotlight');if(spot)spot.style.display='none';
+  const champ=document.getElementById('nts-champion');if(champ)champ.style.display='flex';
+  document.getElementById('nts-champion-name').textContent='🏆 '+bracket.champion;
+  const rt=document.getElementById('nts-round-title');
+  if(rt)rt.textContent=lang==='ar'?'انتهت البطولة 🎉':'Tournament Over 🎉';
+  const listEl=document.getElementById('nts-bracket-list');if(listEl)listEl.innerHTML='';
+  startConfetti();playSound('win');
+}
+function showNetTournamentChampion(){
+  showNetTournamentChampionClient(netTournamentShapeForClient());
+}
+function leaveNetTournament(){
+  cancelNetwork();
+  showScreen('s-welcome');
+}
+// ── Disconnect / reconnect handling (native Android bridge only — see MainActivity.kt) ──
+function handleHostConnLost(connEntry){
+  if(!netTournamentActive||!netTournament)return;
+  const ri=netTournament.rosterConn.findIndex(c=>c===connEntry);
+  if(ri<0)return;
+  netTournament.roster[ri].disconnected=true;
+  showToast(netTournament.roster[ri].name+(lang==='ar'?' انفصل، عم ننتظره يرجع...':' disconnected, waiting to reconnect...'));
+  broadcastTournamentBracket();
+  setTimeout(()=>{netTournamentCheckStillDisconnected(ri);},40000);
+}
+function netTournamentCheckStillDisconnected(rosterIdx){
+  if(!netTournamentActive||!netTournament||!netTournament.roster[rosterIdx])return;
+  if(!netTournament.roster[rosterIdx].disconnected)return; // reconnected in time
+  netTournamentAutoForfeit(rosterIdx);
+}
+// Guest-side reconnect loop: retries joinHost() with the same IP + name every 5s (up to 8
+// tries, matching the host's 40s forfeit grace window). On success the socket reopens and
+// onNetJoinConnected re-sends 'hello' with the same name, which the host's tournament
+// 'hello' handler recognizes and reattaches to the existing roster slot automatically.
+function attemptGuestReconnect(){
+  if(!netTournamentActive||netRole!=='join')return;
+  netReconnectAttempts++;
+  if(netReconnectAttempts>8){
+    const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='none';
+    showToast(lang==='ar'?'ما قدرنا نرجع نتصل بالمضيف':'Could not reconnect to the host');
+    return;
+  }
+  const ip=localStorage.getItem('bingo_last_ip')||window.__pendingHostIp||'';
+  if(window.AndroidBridge&&ip)AndroidBridge.joinHost(ip);
+  netReconnectTimer=setTimeout(()=>{
+    if(netTournamentActive&&netRole==='join'&&!joinConn)attemptGuestReconnect();
+  },5000);
+}
+
 
 // ── JOIN ──
 function startJoinFlow(){
@@ -2585,6 +3172,9 @@ function joinOnMessage(raw){
   let msg;try{msg=JSON.parse(raw);}catch(e){return;}
   if(msg.type==='assignIndex'){
     myJoinIndex=msg.idx;
+    if(myRosterIdx===null)myRosterIdx=msg.idx;
+  } else if(msg.type==='matchSeat'){
+    myJoinIndex=msg.idx;
   } else if(msg.type==='state'){
     players=msg.players.map(p=>({...p,scratched:new Set(p.scratched),isAI:false}));
     currentIdx=msg.currentIdx;totalTurns=msg.totalTurns;gameOver=msg.gameOver;
@@ -2596,6 +3186,26 @@ function joinOnMessage(raw){
     guestArrangeNow();
   } else if(msg.type==='emoji'){
     showEmojiBubble(msg.emoji,msg.from);
+  } else if(msg.type==='tournamentBracket'){
+    netTournamentActive=true;
+    netTournamentClientData=msg;
+    const amActive=msg.activePair&&myRosterIdx!==null&&msg.activePair.includes(myRosterIdx);
+    if(msg.champion){
+      showNetTournamentChampionClient(msg);
+    } else if(!amActive){
+      renderNetTournamentSpectateClient(msg,null);
+      showScreen('s-tournament-spectate');
+    }
+  } else if(msg.type==='tournamentLive'){
+    netTournamentLiveClientData=msg;
+    if(netTournamentClientData)renderNetTournamentSpectateClient(netTournamentClientData,msg);
+  } else if(msg.type==='tournamentReconnected'){
+    const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='none';
+    showToast(lang==='ar'?'رجعت تتصل بالبطولة ✅':'Reconnected to the tournament ✅');
+  } else if(msg.type==='tournamentMatchOver'){
+    playSound(msg.youWon?'win':'lose');
+    if(navigator.vibrate)navigator.vibrate(msg.youWon?[90,50,90,50,220]:[120]);
+    showToast(msg.youWon?(lang==='ar'?'فزت بالمباراة! 🏆':'You won the match! 🏆'):(lang==='ar'?msg.winnerName+' فاز بالمباراة':msg.winnerName+' won the match'));
   }
 }
 function guestArrangeNow(){
@@ -2643,6 +3253,7 @@ function netClientShowWin(winnerIndices){
   document.getElementById('win-secondary-btn').style.display='inline-block';
   document.getElementById('win-secondary-btn').textContent=T('leaveRoomBtn');
   document.getElementById('win-secondary-btn').onclick=leaveNetworkRoom;
+  const wbm=document.getElementById('win-bot-manage');if(wbm)wbm.style.display='none';
   const rb=document.getElementById('win-rearrange-btn');
   if(rb){rb.style.display='inline-block';rb.disabled=false;}
   const btn=document.getElementById('t-play-again');
