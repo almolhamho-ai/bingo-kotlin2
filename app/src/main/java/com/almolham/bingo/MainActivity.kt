@@ -165,7 +165,14 @@ class MainActivity : AppCompatActivity() {
         webView.settings.allowFileAccess = true
         webView.settings.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
 
-        webView.webChromeClient = WebChromeClient() // يسمح بتنبيهات JS وطلبات الصلاحيات لو احتجناها لاحقاً
+        webView.webChromeClient = object : WebChromeClient() {
+            // يطبع أي رسالة console.* (بما فيها أخطاء JS) بالـ Logcat تحت التاغ "BingoJS"،
+            // حتى لو صارت مشكلة زي شاشة بيضاء نقدر نشوف السبب عبر: adb logcat | grep BingoJS
+            override fun onConsoleMessage(msg: android.webkit.ConsoleMessage): Boolean {
+                android.util.Log.d("BingoJS", "${msg.message()} -- ${msg.sourceId()}:${msg.lineNumber()}")
+                return true
+            }
+        }
         webView.addJavascriptInterface(AndroidBridge(), "AndroidBridge")
 
         webView.loadUrl("file:///android_asset/bingo-v18.html")
