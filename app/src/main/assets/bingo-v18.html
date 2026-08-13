@@ -28,24 +28,42 @@ window.addEventListener('error',function(e){
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080812;--surface:#10101e;--card:#16162a;--border:#2a2a4a;
+  --bg:#0a0710;--surface:#150f1e;--card:#1c1526;--border:rgba(240,180,41,.16);
   --gold:#f0b429;--gold2:#e67e22;--green:#00c97a;--red:#ff4757;
-  --blue:#3d8bff;--purple:#8b5cf6;--text:#e8e8f8;--muted:#6b7280;--marked:#1e1e38;
+  --blue:#3d8bff;--purple:#8b5cf6;--text:#f5efe2;--muted:#a8977e;--marked:#241c30;
+  --shadow-elevated:0 14px 34px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.35);
+  --glow-gold:0 0 28px rgba(240,180,41,.28);
+  --ease-premium:cubic-bezier(.16,1,.3,1);
 }
 html.light-theme{
-  --bg:#f4f5fb;--surface:#ffffff;--card:#ffffff;--border:#dcdfe8;
+  --bg:#faf6ee;--surface:#ffffff;--card:#fffdf8;--border:rgba(169,98,10,.18);
   --gold:#c9860f;--gold2:#a8620a;--green:#0a8f57;--red:#d92b3e;
-  --blue:#1d5fd6;--purple:#6d3ec9;--text:#191a24;--muted:#5b6072;--marked:#eef0f7;
+  --blue:#1d5fd6;--purple:#6d3ec9;--text:#221a10;--muted:#7a6b52;--marked:#f0e9da;
+  --shadow-elevated:0 14px 34px rgba(80,60,20,.14),0 2px 10px rgba(80,60,20,.1);
+  --glow-gold:0 0 24px rgba(169,98,10,.16);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
 html,body{height:100%;overflow-x:hidden;}
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
-  background-image:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(240,180,41,.07) 0%,transparent 60%),
-  radial-gradient(ellipse 50% 50% at 80% 90%,rgba(61,139,255,.06) 0%,transparent 60%);
+  background-image:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(240,180,41,.08) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 50% at 80% 90%,rgba(61,139,255,.05) 0%,transparent 60%);
   transition:background .4s;}
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:20px 16px;}
+/* Signature ambient touch: two very soft, slow-drifting glow blobs sit behind every
+   screen (screens have no opaque background of their own, so this shows through
+   everywhere consistently). Cheap — pure CSS, no blur filters on real content. */
+.ambient-blob{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(60px);opacity:.5;}
+.ambient-blob-1{width:260px;height:260px;top:-60px;inset-inline-start:-60px;
+  background:radial-gradient(circle,rgba(240,180,41,.22),transparent 70%);
+  animation:blobDrift1 22s ease-in-out infinite;}
+.ambient-blob-2{width:300px;height:300px;bottom:-80px;inset-inline-end:-80px;
+  background:radial-gradient(circle,rgba(139,92,246,.14),transparent 70%);
+  animation:blobDrift2 26s ease-in-out infinite;}
+@keyframes blobDrift1{0%,100%{transform:translate(0,0);}50%{transform:translate(24px,30px);}}
+@keyframes blobDrift2{0%,100%{transform:translate(0,0);}50%{transform:translate(-20px,-26px);}}
+@media (prefers-reduced-motion:reduce){.ambient-blob{animation:none;}}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:20px 16px;position:relative;z-index:1;}
 .screen.active{display:flex;}
 
 .game-toolbar{width:100%;max-width:400px;display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:10px;}
@@ -98,13 +116,16 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .logo-sub{color:var(--muted);font-size:.85rem;letter-spacing:3px;margin-bottom:6px;}
 .welcome-player{font-size:.9rem;color:var(--gold);margin-bottom:34px;font-weight:700;}
 .menu-stack{display:flex;flex-direction:column;gap:12px;width:100%;max-width:310px;margin-bottom:14px;}
-.menu-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.1);
-  cursor:pointer;text-align:start;transition:transform .15s,box-shadow .15s;font-family:'Tajawal',sans-serif;}
+.menu-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;text-align:start;transition:transform .18s var(--ease-premium),box-shadow .18s;font-family:'Tajawal',sans-serif;
+  box-shadow:var(--shadow-elevated);position:relative;overflow:hidden;}
+.menu-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 40%);}
 .menu-card:hover{transform:translateY(-2px);}
-.menu-card:active{transform:scale(.97);}
-.mc-icon{font-size:1.6rem;width:50px;height:50px;min-width:50px;border-radius:13px;background:rgba(255,255,255,.14);
-  display:flex;align-items:center;justify-content:center;}
-.mc-text{display:flex;flex-direction:column;gap:2px;}
+.menu-card:active{transform:scale(.96);}
+.mc-icon{font-size:1.6rem;width:50px;height:50px;min-width:50px;border-radius:15px;background:rgba(255,255,255,.16);
+  display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.3);position:relative;z-index:1;}
+.mc-text{display:flex;flex-direction:column;gap:2px;position:relative;z-index:1;}
 .mc-text b{font-size:1.05rem;font-weight:900;}
 .mc-text small{font-size:.75rem;opacity:.8;font-weight:400;}
 .card-ai{background:linear-gradient(135deg,#8b5cf6,#3d8bff);color:#fff;box-shadow:0 4px 20px rgba(139,92,246,.35);}
@@ -125,14 +146,16 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 #s-setup{gap:16px;padding-top:70px;padding-bottom:40px;}
 .back-btn{align-self:flex-start;background:none;border:1px solid var(--border);color:var(--muted);
   padding:8px 16px;border-radius:8px;font-family:'Tajawal',sans-serif;font-size:.9rem;cursor:pointer;}
-.section-title{font-size:1.5rem;font-weight:900;color:var(--gold);letter-spacing:1px;align-self:flex-start;}
-.setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:400px;}
+.section-title{font-size:1.5rem;font-weight:900;color:var(--gold);letter-spacing:1.2px;align-self:flex-start;
+  text-shadow:0 0 20px rgba(240,180,41,.22);}
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;width:100%;max-width:400px;
+  box-shadow:var(--shadow-elevated);}
 .setup-label{font-size:.85rem;color:var(--muted);margin-bottom:10px;}
 .row-btns{display:flex;gap:8px;flex-wrap:wrap;}
 .choice-btn{flex:1;min-width:55px;padding:10px 8px;background:var(--surface);border:2px solid var(--border);
   border-radius:10px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;
   cursor:pointer;transition:all .15s;}
-.choice-btn.selected{border-color:var(--gold);background:rgba(240,180,41,.1);color:var(--gold);}
+.choice-btn.selected{border-color:var(--gold);background:rgba(240,180,41,.1);color:var(--gold);box-shadow:0 0 16px rgba(240,180,41,.25);}
 .diff-easy.selected{border-color:var(--green);background:rgba(0,201,122,.1);color:var(--green);}
 .diff-medium.selected{border-color:var(--blue);background:rgba(61,139,255,.1);color:var(--blue);}
 .diff-hard.selected{border-color:var(--gold);background:rgba(240,180,41,.1);color:var(--gold);}
@@ -142,10 +165,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   outline:none;width:100%;transition:border-color .2s;margin-top:6px;}
 .player-input:focus{border-color:var(--gold);}
 .start-btn{width:100%;max-width:400px;padding:16px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:16px;
   font-family:'Tajawal',sans-serif;font-size:1.15rem;font-weight:900;color:#1a1000;cursor:pointer;
-  box-shadow:0 4px 20px rgba(240,180,41,.4);transition:transform .15s;margin-top:4px;}
+  box-shadow:0 4px 20px rgba(240,180,41,.4),var(--glow-gold);transition:transform .18s var(--ease-premium);margin-top:4px;}
 .start-btn:hover{transform:translateY(-2px);}
+.start-btn:active{transform:scale(.97);}
 
 #s-arrange{gap:14px;padding-top:70px;}
 .arrange-info{text-align:center;color:var(--muted);font-size:.9rem;line-height:1.5;}
@@ -196,9 +220,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   animation:letterGlow .5s ease;}
 @keyframes letterGlow{0%{box-shadow:0 0 0 rgba(240,180,41,0);}55%{box-shadow:0 0 28px rgba(240,180,41,.9);}100%{box-shadow:0 0 18px rgba(240,180,41,.6);}}
 .game-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;width:100%;max-width:360px;}
-.gcell{aspect-ratio:1;border-radius:10px;background:var(--card);border:2px solid var(--border);
+.gcell{aspect-ratio:1;border-radius:12px;background:var(--card);border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;
   cursor:pointer;color:var(--text);position:relative;overflow:hidden;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
   transition:background .3s,border-color .3s,color .3s,box-shadow .3s;}
 .gcell.view-only{cursor:default;}
 .gcell:hover:not(.scratched):not(.win-cell):not(.view-only){border-color:var(--gold);}
@@ -208,9 +233,13 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   color:rgba(255,71,87,.22);text-decoration:none;}
 .gcell.win-cell{
   border:3px solid var(--gold) !important;
-  box-shadow:0 0 14px rgba(240,180,41,.45);
-  background:linear-gradient(135deg,rgba(240,180,41,.18),rgba(230,126,34,.18)) !important;
+  box-shadow:0 0 18px rgba(240,180,41,.5);
+  background:linear-gradient(135deg,rgba(240,180,41,.2),rgba(230,126,34,.2)) !important;
   cursor:default;}
+.gcell.win-cell::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
+  background-size:220% 100%;animation:cellShine 2.4s ease-in-out infinite;pointer-events:none;}
+@keyframes cellShine{0%{background-position:140% 0;}100%{background-position:-40% 0;}}
 .gcell.win-cell.scratched{color:#4a4a6a;}
 .gcell.tutorial-hint{border:3px solid #34d399 !important;animation:tutorialPulse 1s ease-in-out infinite;z-index:2;}
 @keyframes tutorialPulse{0%,100%{box-shadow:0 0 8px rgba(52,211,153,.6);transform:scale(1);}50%{box-shadow:0 0 22px rgba(52,211,153,.95);transform:scale(1.07);}}
@@ -219,7 +248,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .emoji-bubble{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:2rem;z-index:998;pointer-events:none;text-align:center;animation:emojiFloat 1.6s ease-out forwards;}
 .emoji-bubble small{display:block;font-size:.6rem;color:var(--muted);}
 @keyframes emojiFloat{0%{opacity:0;transform:translate(-50%,20px) scale(.6);}20%{opacity:1;transform:translate(-50%,0) scale(1.1);}80%{opacity:1;}100%{opacity:0;transform:translate(-50%,-40px) scale(1);}}
-.scoreboard{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;}
+.scoreboard{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow-elevated);}
 .score-title{font-size:.8rem;color:var(--muted);margin-bottom:8px;}
 .score-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);}
 .score-row:last-child{border-bottom:none;}
@@ -245,12 +274,17 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .win-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:16px;}
 .win-badge{width:120px;height:120px;border-radius:50%;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
-  display:flex;align-items:center;justify-content:center;font-size:3rem;
+  display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;overflow:hidden;
   box-shadow:0 0 40px rgba(240,180,41,.6);animation:badgePop .6s .2s both ease;}
+.win-badge::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.65) 48%,transparent 66%);
+  background-size:260% 100%;animation:badgeShine 3s ease-in-out .9s infinite;pointer-events:none;}
+@keyframes badgeShine{0%,30%{background-position:160% 0;}60%,100%{background-position:-60% 0;}}
 @keyframes badgePop{0%{transform:scale(0);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
 .win-title{font-family:'Bebas Neue',cursive;font-size:3.5rem;letter-spacing:6px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 18px rgba(240,180,41,.35));}
 .win-name{font-size:1.5rem;font-weight:900;color:var(--text);}
 .lose-list{color:var(--muted);font-size:.95rem;}
 .win-stars{display:flex;gap:8px;font-size:2rem;}
@@ -261,12 +295,13 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .play-again-btn{margin-top:6px;padding:14px 40px;border-radius:50px;border:none;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   font-family:'Tajawal',sans-serif;font-size:1.1rem;font-weight:900;color:#1a1000;cursor:pointer;
-  box-shadow:0 4px 20px rgba(240,180,41,.4);}
+  box-shadow:0 4px 20px rgba(240,180,41,.4),var(--glow-gold);transition:transform .18s var(--ease-premium);}
+.play-again-btn:active{transform:scale(.96);}
 .win-secondary-btn{padding:12px 30px;border-radius:50px;border:1px solid var(--border);background:var(--card);
   font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;color:var(--muted);cursor:pointer;}
 
 #s-settings{gap:16px;padding-top:70px;padding-bottom:40px;}
-.set-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;width:100%;max-width:400px;}
+.set-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 20px;width:100%;max-width:400px;box-shadow:var(--shadow-elevated);}
 .set-label{font-size:.85rem;color:var(--muted);margin-bottom:10px;font-weight:700;}
 .slider{width:100%;accent-color:var(--gold);height:6px;}
 .theme-row{display:flex;gap:11px;flex-wrap:wrap;}
@@ -282,7 +317,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   color:#1a1000;font-family:'Tajawal',sans-serif;font-weight:700;cursor:pointer;}
 
 #s-howto{gap:14px;padding-top:70px;padding-bottom:40px;}
-.howto-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;width:100%;max-width:420px;
+.howto-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 20px;width:100%;max-width:420px;box-shadow:var(--shadow-elevated);
   display:flex;gap:14px;align-items:flex-start;}
 .howto-num{width:34px;height:34px;min-width:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#1a1000;font-weight:900;display:flex;align-items:center;justify-content:center;}
@@ -364,6 +399,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
+
+<div class="ambient-blob ambient-blob-1"></div>
+<div class="ambient-blob ambient-blob-2"></div>
 
 <!-- LOADING -->
 <div class="screen active" id="s-loading">
@@ -518,7 +556,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- HOST SCREEN -->
 <div class="screen" id="s-host">
-  <button class="back-btn" data-i18n="back" onclick="cancelNetwork();showScreen(netTournamentActive?'s-net-tournament-size':'s-connect')">→ رجوع</button>
+  <button class="back-btn" data-i18n="back" onclick="const _bt=(netTournamentActive||cameFromNetTournamentSize)?'s-net-tournament-size':'s-connect';cancelNetwork();showScreen(_bt)">→ رجوع</button>
   <div class="section-title" data-i18n="hostGameBtn">استضافة اللعبة</div>
   <div class="section-title" id="host-tournament-badge" style="display:none;font-size:.95rem;color:var(--gold);margin-top:-10px;">🏆 بطولة شبكية</div>
   <div class="setup-card net-section">
@@ -549,7 +587,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- JOIN SCREEN -->
 <div class="screen" id="s-join">
-  <button class="back-btn" data-i18n="back" onclick="cancelNetwork();showScreen('s-connect')">→ رجوع</button>
+  <button class="back-btn" data-i18n="back" onclick="const _bt=(netTournamentActive||cameFromNetTournamentSize)?'s-net-tournament-size':'s-connect';cancelNetwork();showScreen(_bt)">→ رجوع</button>
   <div class="section-title" data-i18n="joinGameBtn">الانضمام إلى اللعبة</div>
   <div id="join-step1" class="net-section">
     <div class="webrtc-only">
@@ -609,6 +647,13 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 <div class="screen" id="s-net-tournament-size">
   <button class="back-btn" data-i18n="back" onclick="showScreen('s-welcome')">→ رجوع</button>
   <div class="section-title" data-i18n="netTournamentTitle">بطولة شبكية</div>
+  <div class="menu-stack" style="width:100%;max-width:400px;margin-bottom:6px;">
+    <button class="menu-card card-friends" onclick="startNetTournamentJoinFlow()">
+      <span class="mc-icon">🔗</span>
+      <span class="mc-text"><b data-i18n="joinGameBtn">الانضمام إلى اللعبة</b><small data-i18n="netTournamentJoinHint" id="nt-join-hint">اطلب عنوان الـIP من صاحب البطولة</small></span>
+    </button>
+  </div>
+  <div class="setup-label" style="font-size:.8rem;color:var(--muted);margin:6px 0;" data-i18n="netTournamentOrHostLabel" id="nt-or-host-label">— أو استضف بطولة جديدة —</div>
   <div class="setup-card" style="width:100%;max-width:400px">
     <div class="setup-label" data-i18n="numParticipants">عدد المشاركين</div>
     <div class="row-btns">
@@ -833,7 +878,7 @@ const LANGS={
     customTheme:'🎨 مخصص',pickColor1:'اللون الأساسي',pickColor2:'اللون الثانوي',
     levelsSubTxt:'100 مستوى مليء بالتحدي',
     tournamentSub:'4 أو 8 لاعبين، إقصاء مباشر',
-    netTournamentTitle:'بطولة شبكية',netTournamentSub:'عدة أجهزة، إقصاء مباشر',
+    netTournamentTitle:'بطولة شبكية',netTournamentSub:'عدة أجهزة، إقصاء مباشر',netTournamentJoinHint:'اطلب عنوان الـIP من صاحب البطولة',netTournamentOrHostLabel:'— أو استضف بطولة جديدة —',
     netCardSub:'أجهزة متعددة (بدون إنترنت)',
     participantNames:'أسماء المشاركين',
     youAreHost:'أنت صاحب نقطة الاتصال',
@@ -936,7 +981,7 @@ const LANGS={
     customTheme:'🎨 Custom',pickColor1:'Primary color',pickColor2:'Secondary color',
     levelsSubTxt:'100 challenging levels',
     tournamentSub:'4 or 8 players, single elimination',
-    netTournamentTitle:'Network Tournament',netTournamentSub:'Multiple devices, single elimination',
+    netTournamentTitle:'Network Tournament',netTournamentSub:'Multiple devices, single elimination',netTournamentJoinHint:'Ask the tournament host for their IP address',netTournamentOrHostLabel:'— or host a new tournament —',
     netCardSub:'Multiple devices, no internet',
     participantNames:'Participant Names',
     youAreHost:'You are the host',
@@ -1051,7 +1096,7 @@ const LANGS={
     setTheme:'🎨 Thème',settingsTitle:'Paramètres',shareCodeBtnLbl:'📤 Partager le code (Bluetooth/Nearby)',
     speedFast:'Rapide',speedMed:'Moyen',speedSlow:'Lent',
     starsEarned:'⭐ Étoiles gagnées',startTournamentBtn:'Commencer le tournoi 🏆',statsBtnLbl:'📊 Mes Stats',
-    tapStart:'Commencer 🎉',tournamentInfo2:'Une fois que tous les joueurs ont rejoint (max 6), l\'hôte appuie sur "Commencer à jouer".',tournamentSub:'4 ou 8 joueurs, élimination directe',netTournamentTitle:'Tournoi en réseau',netTournamentSub:'Plusieurs appareils, élimination directe',
+    tapStart:'Commencer 🎉',tournamentInfo2:'Une fois que tous les joueurs ont rejoint (max 6), l\'hôte appuie sur "Commencer à jouer".',tournamentSub:'4 ou 8 joueurs, élimination directe',netTournamentTitle:'Tournoi en réseau',netTournamentSub:'Plusieurs appareils, élimination directe',netTournamentJoinHint:'Demande l\'adresse IP à l\'hôte du tournoi',netTournamentOrHostLabel:'— ou héberge un nouveau tournoi —',
     tournamentTitle:'Tournoi entre amis',tournamentWinnerMsg:'🏆 Félicitations ! {name} est le champion',waitingHostRematchBtn:'En attente d\'une nouvelle manche...',
     waitingHostRematchMsg:'En attente de l\'hôte pour une nouvelle manche',waitingHostStart:'En attente de l\'hôte pour commencer...',waitingPlayerJoinMsg:'En attente que le joueur rejoigne...',
     welcome:'Bienvenue',welcomePlayer:'Bienvenue, {name} 👋',winRateLabel:'Taux de victoire',
@@ -1103,7 +1148,7 @@ const LANGS={
     setTheme:'🎨 Tema',settingsTitle:'Ajustes',shareCodeBtnLbl:'📤 Compartir Código (Bluetooth/Nearby)',
     speedFast:'Rápido',speedMed:'Medio',speedSlow:'Lento',
     starsEarned:'⭐ Estrellas ganadas',startTournamentBtn:'Empezar Torneo 🏆',statsBtnLbl:'📊 Mis Estadísticas',
-    tapStart:'Empezar 🎉',tournamentInfo2:'Una vez que todos los jugadores se unen (máximo seis), el anfitrión toca "Empezar a jugar".',tournamentSub:'4 u 8 jugadores, eliminación directa',netTournamentTitle:'Torneo en red',netTournamentSub:'Varios dispositivos, eliminación directa',
+    tapStart:'Empezar 🎉',tournamentInfo2:'Una vez que todos los jugadores se unen (máximo seis), el anfitrión toca "Empezar a jugar".',tournamentSub:'4 u 8 jugadores, eliminación directa',netTournamentTitle:'Torneo en red',netTournamentSub:'Varios dispositivos, eliminación directa',netTournamentJoinHint:'Pide la dirección IP al anfitrión del torneo',netTournamentOrHostLabel:'— o crea un nuevo torneo —',
     tournamentTitle:'Torneo de Amigos',tournamentWinnerMsg:'🏆 ¡Felicidades! {name} es el campeón',waitingHostRematchBtn:'Esperando una nueva ronda...',
     waitingHostRematchMsg:'Esperando a que el anfitrión inicie una nueva ronda',waitingHostStart:'Esperando a que el anfitrión comience el juego...',waitingPlayerJoinMsg:'Esperando a que el jugador se una...',
     welcome:'Bienvenido',welcomePlayer:'Bienvenido/a, {name} 👋',winRateLabel:'Tasa de victorias',
@@ -1155,7 +1200,7 @@ const LANGS={
     setTheme:'🎨 Design',settingsTitle:'Einstellungen',shareCodeBtnLbl:'📤 Code teilen (Bluetooth/Nearby)',
     speedFast:'Schnell',speedMed:'Mittel',speedSlow:'Langsam',
     starsEarned:'⭐ Verdiente Sterne',startTournamentBtn:'Turnier starten 🏆',statsBtnLbl:'📊 Meine Statistiken',
-    tapStart:'Start 🎉',tournamentInfo2:'Nachdem alle Spieler beigetreten sind (max. sechs), tippt der Host auf "Spiel jetzt starten".',tournamentSub:'4 oder 8 Spieler, K.o.-System',netTournamentTitle:'Netzwerkturnier',netTournamentSub:'Mehrere Geräte, K.o.-System',
+    tapStart:'Start 🎉',tournamentInfo2:'Nachdem alle Spieler beigetreten sind (max. sechs), tippt der Host auf "Spiel jetzt starten".',tournamentSub:'4 oder 8 Spieler, K.o.-System',netTournamentTitle:'Netzwerkturnier',netTournamentSub:'Mehrere Geräte, K.o.-System',netTournamentJoinHint:'Frag den Turnier-Host nach seiner IP-Adresse',netTournamentOrHostLabel:'— oder ein neues Turnier hosten —',
     tournamentTitle:'Freundschaftsturnier',tournamentWinnerMsg:'🏆 Glückwunsch! {name} ist der Champion',waitingHostRematchBtn:'Warte auf eine neue Runde...',
     waitingHostRematchMsg:'Warte auf den Host für eine neue Runde',waitingHostStart:'Warte auf den Host, um das Spiel zu starten...',waitingPlayerJoinMsg:'Warte auf Beitritt des Spielers...',
     welcome:'Willkommen',welcomePlayer:'Willkommen, {name} 👋',winRateLabel:'Gewinnquote',
@@ -1709,7 +1754,7 @@ function getBackTarget(){
       if(arrangingForAIRematch)return 's-win';
       return 's-setup';
     case 's-host': case 's-join':
-      return netTournamentActive?'s-net-tournament-size':'s-connect';
+      return (netTournamentActive||cameFromNetTournamentSize)?'s-net-tournament-size':'s-connect';
     case 's-tournament-spectate':
       return 's-welcome';
     default:
@@ -2556,6 +2601,7 @@ let myRosterIdx=null; // client-side: stable roster position for the whole tourn
 //    'tournamentLive' message instead of the full 'state' payload.
 // ══════════════════════════════════════════
 let netTournamentActive=false, netTournamentSize=4, netTournament=null;
+let cameFromNetTournamentSize=false;
 let netReconnectAttempts=0, netReconnectTimer=null;
 function netMaxPlayers(){return netTournamentActive?netTournamentSize:6;}
 
@@ -2619,6 +2665,7 @@ function cancelNetwork(){
   netMode=false;netRole=null;myJoinIndex=null;myRosterIdx=null;netArrangeContext=null;pendingGuestGrid=null;pendingOfferSdp=null;
   rematchReadySet=new Set();hostReadyForRematch=false;pendingArrangeFromGuests=0;
   netTournamentActive=false;netTournament=null;netTournamentClientData=null;netTournamentLiveClientData=null;
+  cameFromNetTournamentSize=false;
   netReconnectAttempts=0;clearTimeout(netReconnectTimer);netReconnectTimer=null;
   const banner=document.getElementById('net-reconnect-banner');if(banner)banner.style.display='none';
   const badge=document.getElementById('host-tournament-badge');if(badge)badge.style.display='none';
@@ -2944,6 +2991,15 @@ function startNetTournamentHostFlow(){
   startHostFlow();
   const badge=document.getElementById('host-tournament-badge');if(badge)badge.style.display='block';
   renderHostPlayerList();
+}
+function startNetTournamentJoinFlow(){
+  // Joining a tournament room is technically identical to joining a regular network
+  // room (same hello/assignIndex handshake) — the "tournament-ness" lives entirely on
+  // the host's side. netTournamentActive flips to true here on the joiner's own device
+  // as soon as their first 'tournamentBracket' message arrives, but we still mark where
+  // they came from right away so the back button returns to this screen in the meantime.
+  cameFromNetTournamentSize=true;
+  startJoinFlow();
 }
 function buildAndStartNetTournament(){
   const roster=players.map(p=>({name:p.name,isAI:p.isAI,grid:p.grid,disconnected:false}));
