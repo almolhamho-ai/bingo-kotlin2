@@ -11,8 +11,8 @@ android {
         applicationId = "com.almolham.bingo"
         minSdk = 24
         targetSdk = 34
-        versionCode = 41
-        versionName = "0.41"
+        versionCode = 44
+        versionName = "0.44"
     }
 
     signingConfigs {
