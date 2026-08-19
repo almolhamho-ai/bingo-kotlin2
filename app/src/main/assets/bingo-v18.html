@@ -288,21 +288,20 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .gcell.view-only{cursor:default;}
 .gcell:hover:not(.scratched):not(.win-cell):not(.view-only){border-color:var(--gold);}
 .gcell:active:not(.scratched):not(.win-cell):not(.view-only){transform:scale(.92);}
-.gcell.scratched{background:var(--marked);border-color:#3a3a5a;color:#4a4a6a;cursor:default;}
-.gcell.scratched::after{content:'';position:absolute;top:50%;left:10%;right:10%;height:3px;
-  background:linear-gradient(90deg,var(--red),#ff6b6b);border-radius:3px;
-  transform:translateY(-50%) scaleX(1);transform-origin:right center;}
-.gcell.just-called.scratched::after{animation:strikeDraw .4s ease-out;}
-@keyframes strikeDraw{from{transform:translateY(-50%) scaleX(0);}to{transform:translateY(-50%) scaleX(1);}}
+.gcell.scratched{background:var(--marked);border-color:#3a3a5a;color:#4a4a6a;
+  text-decoration:line-through;cursor:default;}
+.gcell.scratched::after{content:'✗';position:absolute;font-size:1.4rem;
+  color:rgba(255,71,87,.22);text-decoration:none;}
 .gcell.win-cell{
   border:3px solid var(--gold) !important;
-  box-shadow:0 0 18px rgba(240,180,41,.5);
-  background:linear-gradient(135deg,rgba(240,180,41,.2),rgba(230,126,34,.2)) !important;
+  box-shadow:0 0 22px rgba(240,180,41,.6);
+  background:linear-gradient(135deg,rgba(240,180,41,.24),rgba(230,126,34,.24)) !important;
   cursor:default;}
 .gcell.win-cell::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
-  background-size:220% 100%;animation:cellShine 4s ease-in-out infinite;pointer-events:none;}
+  background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.7) 45%,transparent 75%);
+  background-size:220% 100%;animation:cellShine 2.6s ease-in-out infinite;pointer-events:none;}
 @keyframes cellShine{0%{background-position:140% 0;}100%{background-position:-40% 0;}}
+@media (prefers-reduced-motion:reduce){.gcell.win-cell::before{animation:none;}}
 .gcell.win-cell.scratched{color:#4a4a6a;}
 .gcell.just-called{animation:cellSoftPop .3s ease-out;}
 @keyframes cellSoftPop{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);}}
@@ -424,6 +423,20 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   background:var(--card);border:1px solid var(--border);padding:12px 24px;border-radius:50px;
   font-size:.95rem;font-weight:700;color:var(--text);opacity:0;transition:all .3s;z-index:999;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#praise-word{position:fixed;top:26%;left:50%;transform:translate(-50%,-50%) scale(.5);
+  font-family:'Bebas Neue',cursive;font-size:clamp(2rem,9vw,3.2rem);letter-spacing:2px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));
+  z-index:900;pointer-events:none;opacity:0;text-align:center;white-space:nowrap;}
+#praise-word.show{animation:praisePunch 1.3s var(--ease-premium) forwards;}
+@keyframes praisePunch{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-6deg);}
+  25%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(2deg);}
+  40%{transform:translate(-50%,-50%) scale(1) rotate(0);}
+  78%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(.92) rotate(0);}}
+@media (prefers-reduced-motion:reduce){#praise-word.show{animation:none;opacity:0;}}
 #net-reconnect-banner{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--red);color:#fff;
   text-align:center;padding:8px 12px;font-size:.85rem;font-weight:800;display:none;}
 
@@ -920,6 +933,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="praise-word"></div>
 <div id="net-reconnect-banner">🔌 انقطع الاتصال، عم نحاول نرجع نتصل...</div>
 <div class="credit">CREATED BY ALMOLHAM OMRAN</div>
 
@@ -1981,7 +1995,7 @@ function startSetup(){
 function mkPlayer(name,isAI,grid){
   return{name,isAI,grid:(grid&&grid.length===25)?grid:shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]),scratched:new Set(),bingoCount:0,winLines:[],justLitLetterIdx:-1};
 }
-const RANDOM_PLAYER_NAMES=['سامر','ليان','كريم','جود','ياسمين','عمر','ريم','خالد','ملك','زين','نور','طارق','ديما','فادي','هبة','وسيم','رنا','باسل'];
+const RANDOM_PLAYER_NAMES=['سامر','ليان','كريم','جود','ياسمين','يزن','ريم','لجين','ملك','زين','نور','طارق','ديما','فادي','هبة','وسيم','رنا','باسل'];
 function randomPlayerName(usedSet){
   const avail=RANDOM_PLAYER_NAMES.filter(n=>!usedSet.has(n));
   const pool=avail.length?avail:RANDOM_PLAYER_NAMES;
@@ -2179,6 +2193,31 @@ function humanScratch(num){
   doScratch(currentIdx,num);
 }
 
+// Quick English "hype word" + spoken pronunciation whenever ANY player completes a
+// full line — a small burst of excitement layered on top of the existing toast, shown
+// only while someone is actually looking at the live game screen. Text-only overlay
+// (no ball/circle graphic), so it never blocks the grid underneath.
+const PRAISE_WORDS=['INCREDIBLE','AMAZING','FANTASTIC','AWESOME','BRILLIANT','SPECTACULAR','UNSTOPPABLE','MAGNIFICENT'];
+function showPraiseWord(){
+  const gameScreen=document.getElementById('s-game');
+  if(!gameScreen||!gameScreen.classList.contains('active'))return;
+  const el=document.getElementById('praise-word');
+  if(!el)return;
+  const word=PRAISE_WORDS[Math.floor(Math.random()*PRAISE_WORDS.length)];
+  el.textContent=word;
+  el.classList.remove('show');
+  void el.offsetWidth; // restart the animation even if two lines complete back-to-back
+  el.classList.add('show');
+  setTimeout(()=>{el.classList.remove('show');},1300);
+  try{
+    if('speechSynthesis' in window){
+      speechSynthesis.cancel(); // don't queue/overlap if triggered again quickly
+      const u=new SpeechSynthesisUtterance(word);
+      u.lang='en-US';u.rate=0.95;u.pitch=1.05;
+      speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
 function doScratch(pidx,num){
   if(gameOver)return;
   lastCalledNum=num;
@@ -2196,6 +2235,7 @@ function doScratch(pidx,num){
       showToast(T('bingoLetter').replace('{L}',ltr).replace('{name}',p.name));
       playSound('bingo');
       if(navigator.vibrate)navigator.vibrate(45);
+      showPraiseWord();
     }
     if(p.bingoCount>=5)winners.push(i);
   });
@@ -2450,6 +2490,18 @@ function endGame(winnerIndices){
     secBtn.textContent=T('backToLevels');
     secBtn.onclick=()=>{showScreen('s-levels');renderLevels();};
     document.getElementById('t-play-again').textContent=T('playAgain');
+  } else if(dailyMode){
+    // The daily challenge is a single attempt per day — it must never fall into the
+    // AI-freeplay "rematch" branch below (which it was doing, since daily play also
+    // sets mode='ai' with no currentLevel), since that offered a rematch button that
+    // could let someone bypass the once-a-day limit entirely.
+    starsEl.style.display='none';
+    xpEl.style.display='block';
+    xpEl.textContent=T('xpEarned').replace('{n}',lastXPGain);
+    secBtn.style.display='none';
+    const playAgainBtn=document.getElementById('t-play-again');
+    playAgainBtn.textContent=lang==='ar'?'رجوع للقائمة 🏠':'Back to Menu 🏠';
+    playAgainBtn.onclick=()=>showScreen('s-welcome');
   } else if(mode==='ai'){
     // Freeplay vs AI (no campaign level attached): give a real rematch — same opponents,
     // fresh grids — alongside an explicit leave option, instead of a single mislabeled
